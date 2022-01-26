@@ -146,19 +146,18 @@ public abstract class AbstractAzureAppServiceState extends State {
     }
     Activity activity;
     Artifact artifact = getWebAppNonContainerArtifact(context);
-    boolean isNonDocker = azureVMSSStateHelper.isWebAppNonContainerDeployment(context);
     if (supportRemoteManifest() && !isGitFetchDone(context)) {
       Map<String, ApplicationManifest> appServiceConfigurationRemoteManifests = getAppServiceConfiguration(context);
       Map<String, ApplicationManifest> remoteManifest =
           azureAppServiceManifestUtils.filterOutRemoteManifest(appServiceConfigurationRemoteManifests);
       if (!isEmpty(remoteManifest)) {
         activity = azureVMSSStateHelper.createAndSaveActivity(
-            context, artifact, getStateType(), commandType(), commandUnitType(), commandUnits(isNonDocker, true));
+            context, artifact, getStateType(), commandType(), commandUnitType(), commandUnits(true));
         return executeRemoteGITFetchTask(context, activity, appServiceConfigurationRemoteManifests, remoteManifest);
       }
     }
     activity = azureVMSSStateHelper.createAndSaveActivity(
-        context, artifact, getStateType(), commandType(), commandUnitType(), commandUnits(isNonDocker, false));
+        context, artifact, getStateType(), commandType(), commandUnitType(), commandUnits(false));
 
     return submitTask(context, activity.getUuid());
   }
@@ -174,7 +173,7 @@ public abstract class AbstractAzureAppServiceState extends State {
 
   private Map<String, ApplicationManifest> getAppServiceConfiguration(ExecutionContext context) {
     String serviceId = azureVMSSStateHelper.getServiceId(context);
-    if (azureVMSSStateHelper.isWebAppNonContainerDeployment(context) && isRollback()) {
+    if (!azureVMSSStateHelper.isWebAppDockerDeployment(context) && isRollback()) {
       Activity rollbackActivity =
           azureVMSSStateHelper.getWebAppNonContainerRollbackActivity(context, serviceId)
               .orElseThrow(()
@@ -392,7 +391,7 @@ public abstract class AbstractAzureAppServiceState extends State {
 
   protected abstract Artifact getWebAppNonContainerArtifact(ExecutionContext context);
 
-  protected abstract List<CommandUnit> commandUnits(boolean isNonDocker, boolean isGitFetch);
+  protected abstract List<CommandUnit> commandUnits(boolean isGitFetch);
 
   @NotNull protected abstract CommandUnitType commandUnitType();
 

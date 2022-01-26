@@ -276,11 +276,10 @@ public class AzureVMSSStateHelper {
         .findFirst();
   }
 
-  public boolean isWebAppNonContainerDeployment(ExecutionContext context) {
+  public boolean isWebAppDockerDeployment(ExecutionContext context) {
     Service service = getServiceByAppId(context, context.getAppId());
     ArtifactType artifactType = service.getArtifactType();
-    return ArtifactType.WAR.equals(artifactType) || ArtifactType.ZIP.equals(artifactType)
-        || ArtifactType.NUGET.equals(artifactType);
+    return ArtifactType.DOCKER.equals(artifactType);
   }
 
   public ExecutionContext getExecutionContext(

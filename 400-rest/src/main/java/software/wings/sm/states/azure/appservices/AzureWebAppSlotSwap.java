@@ -120,7 +120,7 @@ public class AzureWebAppSlotSwap extends AbstractAzureAppServiceState {
   }
 
   @Override
-  protected List<CommandUnit> commandUnits(boolean isNonDocker, boolean isGitFetch) {
+  protected List<CommandUnit> commandUnits(boolean isGitFetch) {
     return ImmutableList.of(new AzureWebAppCommandUnit(AzureConstants.SLOT_SWAP),
         new AzureWebAppCommandUnit(AzureConstants.DEPLOYMENT_STATUS));
   }
