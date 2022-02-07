@@ -60,6 +60,11 @@ To check if your protobuf files are according to the coding standards execute in
 buf lint
 ```
 
+8. Install Docker
+
+Official steps to install docker on mac: [docker.com](https://docs.docker.com/desktop/mac/install/).
+
+
 ### Git setup
 
 1. Setup your harness email to the git config. You can do it globally or just for the harness-core repo:
