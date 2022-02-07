@@ -53,9 +53,9 @@ public class NexusClientImpl {
       return HTimeLimiter.callInterruptible21(timeLimiter, Duration.ofSeconds(20L), () -> {
         if (isNexusTwo) {
           if (RepositoryFormat.docker.name().equals(repositoryFormat)) {
-            throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support Docker artifacts",
-                "The version for the connector is probably 3.x and not 2.x",
-                new InvalidArtifactServerException("Nexus 2.x does not support Docker artifact type", USER));
+            throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support docker artifacts",
+                "The version for the connector should probably be 3.x and not 2.x",
+                new InvalidArtifactServerException("Nexus 2.x does not support docker artifact type", USER));
           }
           return nexusTwoService.getRepositories(nexusConfig, repositoryFormat);
         } else {
@@ -115,9 +115,9 @@ public class NexusClientImpl {
     boolean isNexusTwo = nexusConfig.getVersion() == null || nexusConfig.getVersion().equalsIgnoreCase("2.x");
 
     if (isNexusTwo) {
-      throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support Nexus artifacts",
-          "The version for the connector is probably 3.x and not 2.x",
-          new InvalidArtifactServerException("Nexus 2.x does not support Nexus artifact type", USER));
+      throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support docker artifacts",
+          "The version for the connector should probably be 3.x and not 2.x",
+          new InvalidArtifactServerException("Nexus 2.x does not support docker artifact type", USER));
     } else {
       return nexusThreeService.getArtifactsVersions(nexusConfig, repositoryName, port, imageName, repoFormat);
     }
@@ -128,9 +128,9 @@ public class NexusClientImpl {
     boolean isNexusTwo = nexusConfig.getVersion() == null || nexusConfig.getVersion().equalsIgnoreCase("2.x");
 
     if (isNexusTwo) {
-      throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support Nexus artifacts",
-          "The version for the connector is probably 3.x and not 2.x",
-          new InvalidArtifactServerException("Nexus 2.x does not support Nexus artifact type", USER));
+      throw NestedExceptionUtils.hintWithExplanationException("Nexus 2.x does not support docker artifacts",
+          "The version for the connector should probably be 3.x and not 2.x",
+          new InvalidArtifactServerException("Nexus 2.x does not support docker artifact type", USER));
     } else {
       return nexusThreeService.getBuildDetails(nexusConfig, repository, port, imageName, repositoryFormat, tag);
     }

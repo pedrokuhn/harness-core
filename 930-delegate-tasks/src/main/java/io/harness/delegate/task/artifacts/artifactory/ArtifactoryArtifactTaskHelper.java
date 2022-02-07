@@ -9,7 +9,9 @@ package io.harness.delegate.task.artifacts.artifactory;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.artifact.ArtifactMetadataKeys;
 import io.harness.context.MdcGlobalContextData;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.task.artifacts.request.ArtifactTaskParameters;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskExecutionResponse;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskResponse;
@@ -19,6 +21,8 @@ import io.harness.exception.runtime.ArtifactoryServerRuntimeException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.manage.GlobalContextManager;
+
+import software.wings.utils.RepositoryFormat;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -54,10 +58,25 @@ public class ArtifactoryArtifactTaskHelper {
                           != 0
                       ? artifactTaskResponse.getArtifactTaskExecutionResponse().getArtifactDelegateResponses().get(0)
                       : ArtifactoryArtifactDelegateResponse.builder().build());
+          String buildMetadataUrl = artifactoryArtifactDelegateResponse.getBuildDetails() != null
+              ? artifactoryArtifactDelegateResponse.getBuildDetails().getBuildUrl()
+              : null;
+          String dockerPullCommand =
+              (RepositoryFormat.docker.name().equals(artifactoryArtifactDelegateResponse.getRepositoryFormat())
+                  && artifactoryArtifactDelegateResponse.getBuildDetails() != null
+                  && artifactoryArtifactDelegateResponse.getBuildDetails().getMetadata() != null)
+              ? "\nImage pull command: docker pull "
+                  + artifactoryArtifactDelegateResponse.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE)
+              : null;
           saveLogs(executionLogCallback,
-              "Fetched Artifact details \n  type: Artifactory Artifact\n  imagePath: "
-                  + artifactoryArtifactDelegateResponse.getImagePath()
-                  + "\n  tag: " + artifactoryArtifactDelegateResponse.getTag());
+              "Fetched Artifact details"
+                  + "\ntype: Artifactory Artifact"
+                  + "\nbuild metadata url: " + buildMetadataUrl
+                  + "\nrepository: " + artifactoryArtifactDelegateResponse.getRepositoryName()
+                  + "\nimagePath: " + artifactoryArtifactDelegateResponse.getImagePath()
+                  + "\ntag: " + artifactoryArtifactDelegateResponse.getTag()
+                  + "\nrepository type: " + artifactoryArtifactDelegateResponse.getRepositoryFormat()
+                  + (EmptyPredicate.isNotEmpty(dockerPullCommand) ? dockerPullCommand : ""));
           break;
         case GET_BUILDS:
           saveLogs(executionLogCallback, "Fetching artifact details");

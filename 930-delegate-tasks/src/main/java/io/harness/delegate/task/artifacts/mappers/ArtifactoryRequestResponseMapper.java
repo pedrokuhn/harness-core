@@ -53,7 +53,9 @@ public class ArtifactoryRequestResponseMapper {
       BuildDetailsInternal buildDetailsInternal, ArtifactoryArtifactDelegateRequest request) {
     return ArtifactoryArtifactDelegateResponse.builder()
         .buildDetails(ArtifactBuildDetailsMapper.toBuildDetailsNG(buildDetailsInternal))
+        .repositoryName(request.getRepositoryName())
         .imagePath(request.getImagePath())
+        .repositoryFormat(request.getRepositoryFormat())
         .tag(buildDetailsInternal.getNumber())
         .sourceType(ArtifactSourceType.ARTIFACTORY_REGISTRY)
         .build();

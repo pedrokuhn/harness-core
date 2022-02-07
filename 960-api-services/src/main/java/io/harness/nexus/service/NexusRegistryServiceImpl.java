@@ -118,7 +118,9 @@ public class NexusRegistryServiceImpl implements NexusRegistryService {
         Map<String, String> imageDataMap = new HashMap<>();
         imageDataMap.put(ExceptionMetadataKeys.IMAGE_NAME.name(), imageName);
         imageDataMap.put(ExceptionMetadataKeys.IMAGE_TAG.name(), tag);
-        imageDataMap.put(ExceptionMetadataKeys.URL.name(), builds.get(0).getBuildUrl());
+        if (builds.size() > 0) {
+          imageDataMap.put(ExceptionMetadataKeys.URL.name(), builds.get(0).getBuildUrl());
+        }
         MdcGlobalContextData mdcGlobalContextData = MdcGlobalContextData.builder().map(imageDataMap).build();
         GlobalContextManager.upsertGlobalContextRecord(mdcGlobalContextData);
         throw new NexusRegistryInvalidTagRuntimeRuntimeException("Could not find tag [" + tag

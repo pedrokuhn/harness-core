@@ -54,7 +54,9 @@ public class NexusRequestResponseMapper {
       BuildDetailsInternal buildDetailsInternal, NexusArtifactDelegateRequest request) {
     return NexusArtifactDelegateResponse.builder()
         .buildDetails(ArtifactBuildDetailsMapper.toBuildDetailsNG(buildDetailsInternal))
+        .repositoryName(request.getRepositoryName())
         .imagePath(request.getImagePath())
+        .repositoryFormat(request.getRepositoryFormat())
         .tag(buildDetailsInternal.getNumber())
         .sourceType(ArtifactSourceType.NEXUS_REGISTRY)
         .build();

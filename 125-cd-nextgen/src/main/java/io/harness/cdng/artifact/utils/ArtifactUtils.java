@@ -122,16 +122,16 @@ public class ArtifactUtils {
         NexusRegistryArtifactConfig nexusRegistryArtifactConfig = (NexusRegistryArtifactConfig) artifactConfig;
         return String.format(placeholder, sourceType, nexusRegistryArtifactConfig.getImagePath().getValue(),
             ParameterField.isNull(nexusRegistryArtifactConfig.getTag())
-                ? nexusRegistryArtifactConfig.getTag().getValue()
-                : nexusRegistryArtifactConfig.getTagRegex().getValue(),
+                ? nexusRegistryArtifactConfig.getTagRegex().getValue()
+                : nexusRegistryArtifactConfig.getTag().getValue(),
             nexusRegistryArtifactConfig.getConnectorRef().getValue());
       case ARTIFACTORY_REGISTRY:
         ArtifactoryRegistryArtifactConfig artifactoryRegistryArtifactConfig =
             (ArtifactoryRegistryArtifactConfig) artifactConfig;
         return String.format(placeholder, sourceType, artifactoryRegistryArtifactConfig.getImagePath().getValue(),
             ParameterField.isNull(artifactoryRegistryArtifactConfig.getTag())
-                ? artifactoryRegistryArtifactConfig.getTag().getValue()
-                : artifactoryRegistryArtifactConfig.getTagRegex().getValue(),
+                ? artifactoryRegistryArtifactConfig.getTagRegex().getValue()
+                : artifactoryRegistryArtifactConfig.getTag().getValue(),
             artifactoryRegistryArtifactConfig.getConnectorRef().getValue());
       default:
         throw new UnsupportedOperationException(String.format("Unknown Artifact Config type: [%s]", sourceType));

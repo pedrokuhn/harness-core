@@ -9,7 +9,9 @@ package io.harness.delegate.task.artifacts.nexus;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.artifact.ArtifactMetadataKeys;
 import io.harness.context.MdcGlobalContextData;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.task.artifacts.request.ArtifactTaskParameters;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskExecutionResponse;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskResponse;
@@ -19,6 +21,8 @@ import io.harness.exception.runtime.NexusServerRuntimeException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.manage.GlobalContextManager;
+
+import software.wings.utils.RepositoryFormat;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -52,11 +56,24 @@ public class NexusArtifactTaskHelper {
                           != 0
                       ? artifactTaskResponse.getArtifactTaskExecutionResponse().getArtifactDelegateResponses().get(0)
                       : NexusArtifactDelegateResponse.builder().build());
+          String buildMetadataUrl = nexusArtifactDelegateResponse.getBuildDetails() != null
+              ? nexusArtifactDelegateResponse.getBuildDetails().getBuildUrl()
+              : null;
+          String dockerPullCommand =
+              (RepositoryFormat.docker.name().equals(nexusArtifactDelegateResponse.getRepositoryFormat())
+                  && nexusArtifactDelegateResponse.getBuildDetails() != null
+                  && nexusArtifactDelegateResponse.getBuildDetails().getMetadata() != null)
+              ? "\nImage pull command: docker pull "
+                  + nexusArtifactDelegateResponse.getBuildDetails().getMetadata().get(ArtifactMetadataKeys.IMAGE)
+              : null;
           saveLogs(executionLogCallback,
-              "Fetched Artifact details \n  type: Nexus Artifact\n repository: "
-                  + nexusArtifactDelegateResponse.getRepository()
-                  + "\n  imagePath: " + nexusArtifactDelegateResponse.getImagePath()
-                  + "\n  tag: " + nexusArtifactDelegateResponse.getTag());
+              "Fetched Artifact details"
+                  + "\ntype: Nexus Artifact"
+                  + "\nbuild metadata url: " + buildMetadataUrl
+                  + "\nrepository: " + nexusArtifactDelegateResponse.getRepositoryName() + "\nimagePath: "
+                  + nexusArtifactDelegateResponse.getImagePath() + "\ntag: " + nexusArtifactDelegateResponse.getTag()
+                  + "\nrepository type: " + nexusArtifactDelegateResponse.getRepositoryFormat()
+                  + (EmptyPredicate.isNotEmpty(dockerPullCommand) ? dockerPullCommand : ""));
           break;
         case GET_BUILDS:
           saveLogs(executionLogCallback, "Fetching artifact details");
