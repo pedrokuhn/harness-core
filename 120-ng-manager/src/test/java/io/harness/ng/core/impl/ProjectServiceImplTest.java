@@ -50,6 +50,7 @@ import io.harness.ng.core.dto.ProjectFilterDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.entities.Project.ProjectKeys;
+import io.harness.ng.core.impl.helpers.PlatformInstrumentationHelper;
 import io.harness.ng.core.remote.ProjectMapper;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
 import io.harness.ng.core.services.OrganizationService;
@@ -73,11 +74,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.harness.telemetry.TelemetryReporter;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
@@ -102,13 +106,15 @@ public class ProjectServiceImplTest extends CategoryTest {
   @Mock private NgUserService ngUserService;
   @Mock private AccessControlClient accessControlClient;
   @Mock private ScopeAccessHelper scopeAccessHelper;
+  @InjectMocks PlatformInstrumentationHelper instrumentationHelper;
+  @Mock private TelemetryReporter telemetryReporter;
   private ProjectServiceImpl projectService;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
     projectService = spy(new ProjectServiceImpl(projectRepository, organizationService, transactionTemplate,
-        outboxService, ngUserService, accessControlClient, scopeAccessHelper));
+        outboxService, ngUserService, accessControlClient, scopeAccessHelper, instrumentationHelper));
     when(scopeAccessHelper.getPermittedScopes(any())).then(returnsFirstArg());
   }
 
@@ -139,6 +145,7 @@ public class ProjectServiceImplTest extends CategoryTest {
     projectService.create(accountIdentifier, orgIdentifier, projectDTO);
     try {
       verify(transactionTemplate, times(1)).execute(any());
+      verify(telemetryReporter, times(1)).sendTrackEvent(any(), any(), any(), any());
     } catch (Exception e) {
       e.printStackTrace();
     }
