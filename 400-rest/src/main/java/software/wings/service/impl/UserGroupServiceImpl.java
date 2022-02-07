@@ -660,6 +660,9 @@ public class UserGroupServiceImpl implements UserGroupService {
 
     for (String id : parentsToRemove) {
       UserGroup userGroup = Optional.ofNullable(mongoPersistence.get(UserGroup.class, id)).orElse(null);
+      if (userGroup == null) {
+        return;
+      }
       userGroup.removeParent(UserGroupEntityReference.builder()
                                  .entityType("PIPELINE")
                                  .id(pipelineId)
@@ -673,6 +676,9 @@ public class UserGroupServiceImpl implements UserGroupService {
 
     for (String id : parentsToAdd) {
       UserGroup userGroup = Optional.ofNullable(mongoPersistence.get(UserGroup.class, id)).orElse(null);
+      if (userGroup == null) {
+        return;
+      }
       userGroup.addParent(UserGroupEntityReference.builder()
                               .entityType("PIPELINE")
                               .id(pipelineId)
