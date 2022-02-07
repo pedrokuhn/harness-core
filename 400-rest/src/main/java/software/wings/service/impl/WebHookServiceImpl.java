@@ -519,18 +519,24 @@ public class WebHookServiceImpl implements WebHookService {
       String accountId = getAccountId(trigger);
       if (featureFlagService.isEnabled(GITHUB_WEBHOOK_AUTHENTICATION, accountId)) {
         String gitHubHashedPayload = httpHeaders == null ? null : httpHeaders.getHeaderString(X_HUB_SIGNATURE_256);
-        validateWebHookSecret(webhookSource, triggerCondition, gitHubHashedPayload, payload, accountId);
+        validateWebHookSecret(webhookSource, trigger, triggerCondition, gitHubHashedPayload, payload, accountId);
       }
     } else if (WebhookSource.BITBUCKET == webhookSource) {
       validateBitBucketWebhook(trigger, triggerCondition, httpHeaders);
     }
   }
 
-  private void validateWebHookSecret(WebhookSource webhookSource, WebHookTriggerCondition triggerCondition,
+  private void validateWebHookSecret(WebhookSource webhookSource, Trigger trigger, WebHookTriggerCondition triggerCondition,
       String hashedPayload, String payLoad, String accountId) {
     String webHookSecret = triggerCondition.getWebHookSecret();
+
+    Application app = appService.get(trigger.getAppId());
     if (isEmpty(webHookSecret) && isEmpty(hashedPayload)) {
       return;
+    }
+
+    if (app.getAreWebHookSecretsMandated() && (isNotEmpty(webHookSecret) || isEmpty(hashedPayload)) ) {
+      throw new InvalidRequestException("WebHookSecrets are mandated for Harness trigger! " + webhookSource);
     }
     if (isNotEmpty(webHookSecret) && isEmpty(hashedPayload)) {
       throw new InvalidRequestException("Harness trigger has webhook secret but its not present in " + webhookSource);

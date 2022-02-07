@@ -59,6 +59,7 @@ public class UpdateApplicationDataFetcher
             .name(existingApplication.getName())
             .description(existingApplication.getDescription())
             .isManualTriggerAuthorized(existingApplication.getIsManualTriggerAuthorized())
+                .areWebHookSecretsMandated(existingApplication.getAreWebHookSecretsMandated())
             .yamlGitConfig(existingApplication.getYamlGitConfig()); // yaml config because the way update is written, it
                                                                     // assumes this would be coming
 

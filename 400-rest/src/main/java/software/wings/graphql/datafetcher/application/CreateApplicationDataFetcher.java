@@ -49,6 +49,7 @@ public class CreateApplicationDataFetcher
         .description(qlApplicationInput.getDescription())
         .accountId(accountId)
         .isManualTriggerAuthorized(qlApplicationInput.getIsManualTriggerAuthorized())
+            .areWebHookSecretsMandated(qlApplicationInput.getAreWebHookSecretsMandated())
         .build();
   }
   private QLApplication prepareQLApplication(Application savedApplication) {

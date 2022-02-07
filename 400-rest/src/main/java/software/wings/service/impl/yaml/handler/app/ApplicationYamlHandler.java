@@ -35,7 +35,7 @@ import software.wings.yaml.gitSync.YamlGitConfig.SyncMode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.List;
-
+import static io.harness.beans.FeatureName.GITHUB_WEBHOOK_AUTHENTICATION;
 /**
  * @author rktummala on 10/22/17
  */
@@ -84,6 +84,10 @@ public class ApplicationYamlHandler extends BaseYamlHandler<Application.Yaml, Ap
                     .branchName(branchName)
                     .repoName(repoName)
                     .build();
+
+    if (featureFlagService.isEnabled(GITHUB_WEBHOOK_AUTHENTICATION, application.getAccountId())) {
+      yaml.setAreWebHookSecretsMandated(application.getAreWebHookSecretsMandated());
+    }
 
     if (featureFlagService.isEnabled(WEBHOOK_TRIGGER_AUTHORIZATION, application.getAccountId())) {
       yaml.setIsManualTriggerAuthorized(application.getIsManualTriggerAuthorized());
