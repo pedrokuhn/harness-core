@@ -8,7 +8,7 @@ package tasks
 import (
 	"context"
 	"fmt"
-	"github.com/wings-software/portal/commons/go/lib/filesystem"
+	"github.com/harness/harness-core/commons/go/lib/filesystem"
 	"io"
 	"os"
 	"path/filepath"
