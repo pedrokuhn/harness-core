@@ -16,17 +16,14 @@ import io.harness.eventsframework.schemas.entity.EntityScopeInfo;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.FullSyncEventRequest;
-import io.harness.gitsync.UserPrincipal;
 import io.harness.gitsync.common.dtos.TriggerFullSyncRequestDTO;
 import io.harness.gitsync.common.dtos.TriggerFullSyncResponseDTO;
-import io.harness.gitsync.common.helper.UserPrincipalMapper;
+import io.harness.gitsync.common.helper.UserProfileHelper;
 import io.harness.gitsync.common.service.FullSyncTriggerService;
 import io.harness.gitsync.core.fullsync.GitFullSyncConfigService;
 import io.harness.gitsync.core.fullsync.entity.GitFullSyncJob;
 import io.harness.gitsync.core.fullsync.service.FullSyncJobService;
 import io.harness.gitsync.fullsync.dtos.GitFullSyncConfigDTO;
-import io.harness.security.SourcePrincipalContextBuilder;
-import io.harness.security.dto.PrincipalType;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
@@ -42,14 +39,16 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
   private final Producer eventProducer;
   private final GitFullSyncConfigService gitFullSyncConfigService;
   private final FullSyncJobService fullSyncJobService;
+  private final UserProfileHelper userProfileHelper;
 
   @Inject
-  public FullSyncTriggerServiceImpl(
-      @Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM) Producer fullSyncEventProducer,
-      GitFullSyncConfigService gitFullSyncConfigService, FullSyncJobService fullSyncJobService) {
+  public FullSyncTriggerServiceImpl(@Named(EventsFrameworkConstants.GIT_FULL_SYNC_STREAM)
+                                    Producer fullSyncEventProducer, GitFullSyncConfigService gitFullSyncConfigService,
+      FullSyncJobService fullSyncJobService, UserProfileHelper userProfileHelper) {
     this.eventProducer = fullSyncEventProducer;
     this.gitFullSyncConfigService = gitFullSyncConfigService;
     this.fullSyncJobService = fullSyncJobService;
+    this.userProfileHelper = userProfileHelper;
   }
 
   @Override
@@ -106,7 +105,7 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
                                                      .setCreatePr(fullSyncRequest.isCreatePR())
                                                      .setIsNewBranch(fullSyncRequest.isNewBranch())
                                                      .setRootFolder(fullSyncRequest.getRootFolder())
-                                                     .setUserPrincipal(getUserPrincipal());
+                                                     .setUserPrincipal(userProfileHelper.getUserPrincipal());
 
     if (fullSyncRequest.isCreatePR()) {
       builder.setTargetBranch(fullSyncRequest.getTargetBranchForPR()).setPrTitle(fullSyncRequest.getPrTitle());
@@ -129,16 +128,5 @@ public class FullSyncTriggerServiceImpl implements FullSyncTriggerService {
           fullSyncRequest.getYamlGitConfigIdentifier(), e);
       return null;
     }
-  }
-
-  private UserPrincipal getUserPrincipal() {
-    if (SourcePrincipalContextBuilder.getSourcePrincipal() != null
-        && SourcePrincipalContextBuilder.getSourcePrincipal().getType() == PrincipalType.USER) {
-      io.harness.security.dto.UserPrincipal userPrincipalFromContext =
-          (io.harness.security.dto.UserPrincipal) SourcePrincipalContextBuilder.getSourcePrincipal();
-
-      return UserPrincipalMapper.toProto(userPrincipalFromContext);
-    }
-    throw new InvalidRequestException(String.format("User not set for full-sync event"));
   }
 }
