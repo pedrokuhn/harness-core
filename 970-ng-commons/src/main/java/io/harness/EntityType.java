@@ -123,7 +123,6 @@ public enum EntityType {
       EntityYamlRootNames.SERVICENOW_APPROVAL),
   @JsonProperty(EntityTypeConstants.OPAPOLICIES)
   OPAPOLICIES(ModuleType.CORE, EntityTypeConstants.OPAPOLICIES, IdentifierRef.class, EntityYamlRootNames.OPAPOLICY),
-  @JsonProperty(EntityTypeConstants.POLICY_STEP)
   POLICY_STEP(ModuleType.PMS, EntityTypeConstants.POLICY_STEP, IdentifierRef.class, EntityYamlRootNames.POLICY_STEP);
 
   private final ModuleType moduleType;
