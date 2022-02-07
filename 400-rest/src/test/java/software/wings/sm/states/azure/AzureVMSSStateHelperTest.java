@@ -1216,7 +1216,7 @@ public class AzureVMSSStateHelperTest extends CategoryTest {
     when(serviceResourceService.findArtifactForOnDemandWorkflow(appId, workflowExecutionId))
         .thenReturn(Optional.of(rollbackArtifact));
 
-    Optional<Artifact> artifact = azureVMSSStateHelper.getArtifactForRollback(context, serviceId);
+    Optional<Artifact> artifact = azureVMSSStateHelper.getWebAppNonContainerArtifactForRollback(context, serviceId);
     assertThat(artifact.isPresent()).isTrue();
     assertThat(artifact.get()).isEqualTo(rollbackArtifact);
   }

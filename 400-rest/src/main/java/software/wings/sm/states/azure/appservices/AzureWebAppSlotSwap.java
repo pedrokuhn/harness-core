@@ -18,6 +18,7 @@ import io.harness.delegate.task.azure.AzureTaskExecutionResponse;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppSwapSlotsParameters;
 import io.harness.delegate.task.azure.appservice.webapp.response.AzureWebAppSwapSlotsResponse;
 
+import software.wings.beans.artifact.Artifact;
 import software.wings.beans.command.AzureWebAppCommandUnit;
 import software.wings.beans.command.CommandUnit;
 import software.wings.beans.command.CommandUnitDetails.CommandUnitType;
@@ -100,6 +101,11 @@ public class AzureWebAppSlotSwap extends AbstractAzureAppServiceState {
     stateExecutionData.setAppServiceName(swapSlotsResponse.getPreDeploymentData().getAppName());
     stateExecutionData.setDeploymentSlot(swapSlotsResponse.getPreDeploymentData().getSlotName());
     return stateExecutionData;
+  }
+
+  @Override
+  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+    return null;
   }
 
   @Override

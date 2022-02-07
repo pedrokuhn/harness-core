@@ -63,6 +63,9 @@ public interface AzureConstants {
   String BG_SWAP_ROUTES_COMMAND_UNIT = "Swap Routes";
   String BG_ROLLBACK_COMMAND_UNIT = "Rollback Swap Routes";
 
+  // Activity command names
+  String AZURE_WEBAPP_SLOT_SETUP_ACTIVITY_COMMAND_NAME = "AZURE_WEBAPP_SLOT_SETUP";
+
   // Messaging
   String SKIP_VMSS_DEPLOY = "No Azure VMSS setup context element found. Skipping deploy";
   String SKIP_VMSS_ROLLBACK = "No Azure VMSS setup context element found. Skipping rollback";

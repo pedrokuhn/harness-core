@@ -40,6 +40,7 @@ import software.wings.api.InstanceElement;
 import software.wings.api.InstanceElementListParam;
 import software.wings.beans.AzureWebAppInfrastructureMapping;
 import software.wings.beans.TaskType;
+import software.wings.beans.artifact.Artifact;
 import software.wings.beans.artifact.ArtifactStreamAttributes;
 import software.wings.beans.command.AzureWebAppCommandUnit;
 import software.wings.beans.command.CommandUnit;
@@ -272,6 +273,15 @@ public class AzureWebAppSlotSetup extends AbstractAzureAppServiceState {
     List<InstanceElement> instanceElements = getInstanceElements(context, slotSetupTaskResponse, stateExecutionData);
     azureVMSSStateHelper.saveAzureAppInfoToSweepingOutput(
         context, instanceElements, slotSetupTaskResponse.getAzureAppDeploymentData());
+  }
+
+  @Override
+  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+    if (!azureVMSSStateHelper.isWebAppNonContainerDeployment(context)) {
+      return null;
+    }
+
+    return azureVMSSStateHelper.getWebAppNonContainerArtifact(context);
   }
 
   @Override

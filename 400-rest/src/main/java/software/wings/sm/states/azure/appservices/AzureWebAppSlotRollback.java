@@ -15,6 +15,7 @@ import io.harness.delegate.task.azure.AzureTaskExecutionResponse;
 import io.harness.delegate.task.azure.appservice.AzureAppServicePreDeploymentData;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppRollbackParameters;
 
+import software.wings.beans.artifact.Artifact;
 import software.wings.beans.command.AzureWebAppCommandUnit;
 import software.wings.beans.command.CommandUnit;
 import software.wings.service.impl.azure.manager.AzureTaskExecutionRequest;
@@ -102,7 +103,7 @@ public class AzureWebAppSlotRollback extends AzureWebAppSlotSetup {
         return false;
       }
 
-      if (!azureVMSSStateHelper.getArtifactForRollback(context).isPresent()) {
+      if (!azureVMSSStateHelper.getWebAppNonContainerArtifactForRollback(context).isPresent()) {
         setStepSkipMsg("Not found artifact for rollback. Skipping rollback");
         return false;
       }
@@ -110,6 +111,15 @@ public class AzureWebAppSlotRollback extends AzureWebAppSlotSetup {
       return true;
     }
     return false;
+  }
+
+  @Override
+  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+    if (!azureVMSSStateHelper.isWebAppNonContainerDeployment(context)) {
+      return null;
+    }
+
+    return azureVMSSStateHelper.getWebAppNonContainerArtifactForRollbackExceptionally(context);
   }
 
   @Override

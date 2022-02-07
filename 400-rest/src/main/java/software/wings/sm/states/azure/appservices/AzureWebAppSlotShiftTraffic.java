@@ -16,6 +16,7 @@ import io.harness.delegate.task.azure.AzureTaskExecutionResponse;
 import io.harness.delegate.task.azure.appservice.webapp.request.AzureWebAppSlotShiftTrafficParameters;
 import io.harness.delegate.task.azure.appservice.webapp.response.AzureWebAppSlotShiftTrafficResponse;
 
+import software.wings.beans.artifact.Artifact;
 import software.wings.beans.command.AzureWebAppCommandUnit;
 import software.wings.beans.command.CommandUnit;
 import software.wings.beans.command.CommandUnitDetails;
@@ -106,6 +107,11 @@ public class AzureWebAppSlotShiftTraffic extends AbstractAzureAppServiceState {
     stateExecutionData.setAppServiceName(slotSetupTaskResponse.getPreDeploymentData().getAppName());
     stateExecutionData.setDeploySlotName(slotSetupTaskResponse.getPreDeploymentData().getSlotName());
     return stateExecutionData;
+  }
+
+  @Override
+  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+    return null;
   }
 
   @Override
