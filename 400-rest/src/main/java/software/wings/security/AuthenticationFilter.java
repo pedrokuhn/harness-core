@@ -46,6 +46,7 @@ import io.harness.security.annotations.PublicApi;
 import io.harness.security.annotations.PublicApiWithWhitelist;
 import io.harness.security.annotations.ScimAPI;
 
+import lombok.extern.slf4j.Slf4j;
 import software.wings.beans.AuthToken;
 import software.wings.beans.User;
 import software.wings.common.AuditHelper;
@@ -81,6 +82,7 @@ import javax.ws.rs.core.Response;
 @Singleton
 @Priority(AUTHENTICATION)
 @OwnedBy(PL)
+@Slf4j
 @TargetModule(HarnessModule._360_CG_MANAGER)
 public class AuthenticationFilter implements ContainerRequestFilter {
   @VisibleForTesting public static final String API_KEY_HEADER = "X-Api-Key";
@@ -319,6 +321,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
   private void setPrincipal(String tokenString) {
     if (tokenString.length() > 32) {
       Map<String, Claim> claimMap = verifyJWTToken(tokenString, secretManager.getJWTSecret(JWT_CATEGORY.AUTH_SECRET));
+      if(!claimMap.containsKey("exp")){
+        log.warn(this.getClass().getName() + " verifies JWT Token without Expiry Date ");
+      }
       SecurityContextBuilder.setContext(claimMap);
     }
   }

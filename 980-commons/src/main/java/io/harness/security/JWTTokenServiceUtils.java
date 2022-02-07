@@ -49,6 +49,9 @@ public class JWTTokenServiceUtils {
 
   public Pair<Boolean, Map<String, Claim> > isServiceAuthorizationValid(String serviceToken, String serviceSecret) {
     Map<String, Claim> claimMap = verifyJWTToken(serviceToken, serviceSecret);
+    if(!claimMap.containsKey("exp")){
+      log.warn("JWTTokenServiceUtils Class verifies JWT Token without Expiry Date ");
+    }
     return Pair.of(true, claimMap);
   }
 

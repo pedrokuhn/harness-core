@@ -599,6 +599,9 @@ public class InviteServiceImpl implements InviteService {
 
   private Optional<String> getInviteIdFromToken(String token) {
     Map<String, Claim> claims = jwtGeneratorUtils.verifyJWTToken(token, jwtPasswordSecret);
+    if(!claims.containsKey("exp")){
+      log.warn(this.getClass().getName() + " verifies JWT Token without Expiry Date ");
+    }
     if (!claims.containsKey(InviteKeys.id)) {
       return Optional.empty();
     }
