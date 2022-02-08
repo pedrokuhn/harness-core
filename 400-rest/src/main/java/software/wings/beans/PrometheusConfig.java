@@ -90,12 +90,12 @@ public class PrometheusConfig extends SettingValue implements EncryptableSetting
         .baseUrl(url)
         .url(urlToFetch)
         .collectionMethod(APMVerificationState.Method.GET)
-        .headers(getHeaders())
+        .headers(generateHeaders())
         .options(new HashMap<>())
         .build();
   }
 
-  public Map<String, String> getHeaders() {
+  public Map<String, String> generateHeaders() {
     HashMap<String, String> headersMap = new HashMap();
 
     if (isEmpty(username)) {
