@@ -59,4 +59,5 @@ public class EntityYamlRootNames {
   public static String BARRIER = "Barrier";
   public static String FLAG_CONFIGURATION = "FlagConfiguration";
   public static String OPAPOLICY = "governancePolicy";
+  public static String POLICY_STEP = "PolicyStep";
 }
