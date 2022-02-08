@@ -25,6 +25,7 @@ import software.wings.sm.StateType;
 import software.wings.sm.states.APMVerificationState;
 import software.wings.yaml.setting.VerificationProviderYaml;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.github.reinert.jjschema.Attributes;
@@ -47,14 +48,13 @@ import org.hibernate.validator.constraints.NotEmpty;
 @JsonTypeName("PROMETHEUS")
 @Builder
 @EqualsAndHashCode(callSuper = false)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PrometheusConfig extends SettingValue implements EncryptableSetting, ExecutionCapabilityDemander {
   public static final String VALIDATION_URL = "api/v1/query?query=up";
   @Attributes(title = "URL", required = true) private String url;
-  @Attributes(title = "username") private String username;
-  @Attributes(title = "password") @Encrypted(fieldName = "password") private char[] password;
-
+  @Attributes(title = "Username") private String username;
+  @Attributes(title = "Password") @Encrypted(fieldName = "password") private char[] password;
   @JsonView(JsonViews.Internal.class) @SchemaIgnore private String encryptedPassword;
-
   @SchemaIgnore @NotEmpty private String accountId;
 
   public PrometheusConfig() {
@@ -122,6 +122,8 @@ public class PrometheusConfig extends SettingValue implements EncryptableSetting
   @EqualsAndHashCode(callSuper = true)
   public static final class PrometheusYaml extends VerificationProviderYaml {
     private String prometheusUrl;
+    private String username;
+    private String password;
 
     @Builder
     public PrometheusYaml(
