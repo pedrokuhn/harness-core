@@ -22,6 +22,7 @@ import io.harness.reflection.HarnessReflections;
 
 import com.google.inject.Injector;
 import com.mongodb.MongoClient;
+import com.mongodb.ReadPreference;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -80,6 +81,16 @@ public class SpringPersistenceConfig extends AbstractMongoConfiguration {
     MappingMongoConverter mappingMongoConverter = mappingMongoConverter();
     mappingMongoConverter.setMapKeyDotReplacement(DOT_REPLACEMENT);
     return new HMongoTemplate(mongoDbFactory(), mappingMongoConverter, config.getTraceMode());
+  }
+
+  @Bean(name = "secondary")
+  public MongoTemplate mongoTemplateSecondary() throws Exception {
+    MongoConfig config = injector.getInstance(MongoConfig.class);
+    MappingMongoConverter mappingMongoConverter = mappingMongoConverter();
+    mappingMongoConverter.setMapKeyDotReplacement(DOT_REPLACEMENT);
+    HMongoTemplate mongoTemplate = new HMongoTemplate(mongoDbFactory(), mappingMongoConverter, config.getTraceMode());
+    mongoTemplate.setReadPreference(ReadPreference.secondaryPreferred());
+    return mongoTemplate;
   }
 
   @Bean

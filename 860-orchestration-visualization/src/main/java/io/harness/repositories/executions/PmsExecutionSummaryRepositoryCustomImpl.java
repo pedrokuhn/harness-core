@@ -19,6 +19,7 @@ import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity;
 import io.harness.pms.plan.execution.beans.PipelineExecutionSummaryEntity.PlanExecutionSummaryKeys;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.mongodb.client.result.UpdateResult;
 import java.time.Duration;
 import java.util.List;
@@ -39,13 +40,20 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.repository.support.PageableExecutionUtils;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__({ @Inject }))
 @Slf4j
 @OwnedBy(PIPELINE)
 public class PmsExecutionSummaryRepositoryCustomImpl implements PmsExecutionSummaryRepositoryCustom {
   private final MongoTemplate mongoTemplate;
+  private final MongoTemplate secondaryMongoTemplate;
   private final Duration RETRY_SLEEP_DURATION = Duration.ofSeconds(10);
   private final int MAX_ATTEMPTS = 3;
+
+  @Inject
+  public PmsExecutionSummaryRepositoryCustomImpl(
+      MongoTemplate mongoTemplate, @Named("secondary") MongoTemplate secondaryMongoTemplate) {
+    this.mongoTemplate = mongoTemplate;
+    this.secondaryMongoTemplate = secondaryMongoTemplate;
+  }
 
   @Override
   public PipelineExecutionSummaryEntity update(Query query, Update update) {
@@ -73,7 +81,7 @@ public class PmsExecutionSummaryRepositoryCustomImpl implements PmsExecutionSumm
       Query query = new Query(criteria).with(pageable);
       List<PipelineExecutionSummaryEntity> projects = mongoTemplate.find(query, PipelineExecutionSummaryEntity.class);
       return PageableExecutionUtils.getPage(projects, pageable,
-          () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), PipelineExecutionSummaryEntity.class));
+          () -> secondaryMongoTemplate.count(Query.of(query).limit(-1).skip(-1), PipelineExecutionSummaryEntity.class));
     } catch (IllegalArgumentException ex) {
       log.error(ex.getMessage(), ex);
       throw new InvalidRequestException("Execution Status not found", ex);
