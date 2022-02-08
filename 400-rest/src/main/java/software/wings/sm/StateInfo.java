@@ -17,7 +17,7 @@ import lombok.Data;
 @OwnedBy(CDC)
 @Data
 @Builder
-public class StateInfo  {
+public class StateInfo {
   String name;
   String type;
 }
