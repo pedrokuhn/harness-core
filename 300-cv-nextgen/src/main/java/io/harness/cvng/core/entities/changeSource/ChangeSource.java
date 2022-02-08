@@ -85,8 +85,10 @@ public abstract class ChangeSource
   @NotNull String orgIdentifier;
   @NotNull String projectIdentifier;
 
-  @NotNull String serviceIdentifier;
-  @NotNull String envIdentifier;
+  @Deprecated String serviceIdentifier;
+  @Deprecated String envIdentifier;
+
+  String monitoredServiceIdentifier;
 
   @NotNull String identifier;
   @NotNull ChangeSourceType type;
