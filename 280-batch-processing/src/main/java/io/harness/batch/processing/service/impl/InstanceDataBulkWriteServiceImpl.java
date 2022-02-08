@@ -298,7 +298,10 @@ public class InstanceDataBulkWriteServiceImpl implements InstanceDataBulkWriteSe
       }
     }
     result = bulkWriteOperation.execute();
-    log.info("BulkWriteExecutor result: {}", result.toString());
+    log.info(
+        "BulkWriteExecutor result [acknowledged:{}, insertedCount:{}, matchedCount:{}, modifiedCount:{}, removedCount:{}]",
+        result.isAcknowledged(), result.getInsertedCount(), result.getMatchedCount(), result.getModifiedCount(),
+        result.getRemovedCount());
     return result;
   }
 }
