@@ -604,8 +604,10 @@ public class InviteServiceImpl implements InviteService {
     if (!claims.containsKey("exp")) {
       log.warn(this.getClass().getName() + " verifies JWT Token without Expiry Date");
       Principal principal = SecurityContextBuilder.getPrincipalFromClaims(claims);
-      log.warn(String.format("Principal is not null, its type is %s and its name is %s", principal.getType().toString(),
-          principal.getName()));
+      if (principal != null) {
+        log.warn(String.format(
+            "Principal type is %s and its name is %s", principal.getType().toString(), principal.getName()));
+      }
     }
     if (!claims.containsKey(InviteKeys.id)) {
       return Optional.empty();
