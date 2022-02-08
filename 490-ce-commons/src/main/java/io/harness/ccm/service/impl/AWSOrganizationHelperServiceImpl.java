@@ -19,6 +19,9 @@ import com.amazonaws.services.organizations.AWSOrganizationsClient;
 import com.amazonaws.services.organizations.model.Account;
 import com.amazonaws.services.organizations.model.ListAccountsRequest;
 import com.amazonaws.services.organizations.model.ListAccountsResult;
+import com.amazonaws.services.organizations.model.ListTagsForResourceRequest;
+import com.amazonaws.services.organizations.model.ListTagsForResourceResult;
+import com.amazonaws.services.organizations.model.Tag;
 import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,5 +85,22 @@ public class AWSOrganizationHelperServiceImpl implements AWSOrganizationHelperSe
       nextToken = listAccountsResult.getNextToken();
     } while (nextToken != null);
     return accountList;
+  }
+
+  public List<Tag> listAwsAccountTags(
+      CrossAccountAccessDTO crossAccountAccess, String awsAccessKey, String awsSecretKey, String awsAccountId) {
+    AWSOrganizationsClient awsOrganizationsClient = awsClient.getAWSOrganizationsClient(
+        crossAccountAccess.getCrossAccountRoleArn(), crossAccountAccess.getExternalId(), awsAccessKey, awsSecretKey);
+    List<Tag> tagList = new ArrayList<>();
+    String nextToken = null;
+    ListTagsForResourceRequest listTagsForResourceRequest = new ListTagsForResourceRequest();
+    do {
+      listTagsForResourceRequest.withNextToken(nextToken);
+      ListTagsForResourceResult listTagsForResourceResult =
+          awsOrganizationsClient.listTagsForResource(listTagsForResourceRequest.withResourceId(awsAccountId));
+      tagList.addAll(listTagsForResourceResult.getTags());
+      nextToken = listTagsForResourceResult.getNextToken();
+    } while (nextToken != null);
+    return tagList;
   }
 }

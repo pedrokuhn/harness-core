@@ -108,6 +108,7 @@ scheduler-jobs-config:
   weeklyReportsJobCron: "0 0 14 * * MON"
   budgetCostUpdateJobCron: "0 0 14 * * ?"
   connectorHealthUpdateJobCron: "0 0 14 * * ?"
+  awsAccountTagsCollectionJobCron : "0 */10 * * * ?"
 
 cePythonService:
   pythonServiceUrl: "http://0.0.0.0:8081"
@@ -132,6 +133,9 @@ ngManagerServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiw
 awsCurBilling: true
 
 connectorHealthUpdateJobConfig:
+  enabled: true
+
+awsAccountTagsCollectionJobConfig:
   enabled: true
 
 gcpConfig:
