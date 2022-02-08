@@ -115,6 +115,15 @@ public class ApplicationYamlHandler extends BaseYamlHandler<Application.Yaml, Ap
       }
     }
 
+    if (featureFlagService.isEnabled(GITHUB_WEBHOOK_AUTHENTICATION, accountId)) {
+      if (yaml.getAreWebHookSecretsMandated() == null && previous != null
+              && previous.getAreWebHookSecretsMandated() != null) {
+        current.setAreWebHookSecretsMandated(false);
+      } else {
+        current.setAreWebHookSecretsMandated(yaml.getAreWebHookSecretsMandated());
+      }
+    }
+
     current.setSyncFromGit(changeContext.getChange().isSyncFromGit());
 
     Application updatedApplication;
