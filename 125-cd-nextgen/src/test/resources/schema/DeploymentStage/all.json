@@ -397,10 +397,19 @@
           ],
           "properties": {
             "artifacts": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ArtifactoryFromYaml"
-              }
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ArtifactoryFromYaml"
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^<\\+input>(\\.(allowedValues|regex)\\(.+?\\))*$",
+                  "minLength": 1
+                }
+              ]
             },
             "connectorRef": {
               "type": "string"
