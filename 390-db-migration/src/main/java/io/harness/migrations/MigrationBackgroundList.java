@@ -53,7 +53,6 @@ import io.harness.migrations.all.AddHarnessOwnedToResourceConstraint;
 import io.harness.migrations.all.AddInfraMappingNameToInstanceData;
 import io.harness.migrations.all.AddIsDefaultFlagToUserGroup;
 import io.harness.migrations.all.AddOrchestrationToWorkflows;
-import io.harness.migrations.all.AddPipelinesReferenceToUserGroups;
 import io.harness.migrations.all.AddRingDetailsToDelegateRing;
 import io.harness.migrations.all.AddRingsToAccountMigration;
 import io.harness.migrations.all.AddStateMachineToWorkflowExecutions;
@@ -68,6 +67,7 @@ import io.harness.migrations.all.CleanupOrphanInfraMappings;
 import io.harness.migrations.all.CleanupOrphanInstances;
 import io.harness.migrations.all.CleanupSyncStatusForDeletedEntities;
 import io.harness.migrations.all.ConvertHttpHeadersStringTypeToList;
+import io.harness.migrations.all.CreateDefaultNgDelegateTokenMigration;
 import io.harness.migrations.all.CreateNgPrimaryProfileForExistingAccounts;
 import io.harness.migrations.all.CreatePrimiryProfileForAllAccounts;
 import io.harness.migrations.all.DefaultDelegateNgTokenMigration;
@@ -368,7 +368,7 @@ public class MigrationBackgroundList {
         .add(Pair.of(211, AddRingsToAccountMigration.class))
         .add(Pair.of(212, AddRingDetailsToDelegateRing.class))
         .add(Pair.of(213, RemoveUsageRestrictionForApplicationDefaultsMigration.class))
-        .add(Pair.of(214, AddPipelinesReferenceToUserGroups.class))
+        .add(Pair.of(214, CreateDefaultNgDelegateTokenMigration.class))
         .build();
   }
 }
