@@ -145,7 +145,7 @@ public abstract class AbstractAzureAppServiceState extends State {
       return ExecutionResponse.builder().executionStatus(SKIPPED).errorMessage(skipMessage()).build();
     }
     Activity activity;
-    Artifact artifact = getWebAppNonContainerArtifact(context);
+    Artifact artifact = getWebAppPackageArtifact(context);
     if (supportRemoteManifest() && !isGitFetchDone(context)) {
       Map<String, ApplicationManifest> appServiceConfigurationRemoteManifests = getAppServiceConfiguration(context);
       Map<String, ApplicationManifest> remoteManifest =
@@ -175,7 +175,7 @@ public abstract class AbstractAzureAppServiceState extends State {
     String serviceId = azureVMSSStateHelper.getServiceId(context);
     if (!azureVMSSStateHelper.isWebAppDockerDeployment(context) && isRollback()) {
       Activity rollbackActivity =
-          azureVMSSStateHelper.getWebAppNonContainerRollbackActivity(context, serviceId)
+          azureVMSSStateHelper.getWebAppPackageRollbackActivity(context, serviceId)
               .orElseThrow(()
                                -> new InvalidArgumentsException(
                                    format("Not found activity for web app rollback, serviceId: %s", serviceId)));
@@ -389,7 +389,7 @@ public abstract class AbstractAzureAppServiceState extends State {
     return null;
   }
 
-  protected abstract Artifact getWebAppNonContainerArtifact(ExecutionContext context);
+  protected abstract Artifact getWebAppPackageArtifact(ExecutionContext context);
 
   protected abstract List<CommandUnit> commandUnits(boolean isGitFetch);
 

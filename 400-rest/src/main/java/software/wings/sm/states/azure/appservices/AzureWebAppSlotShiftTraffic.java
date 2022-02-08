@@ -110,7 +110,7 @@ public class AzureWebAppSlotShiftTraffic extends AbstractAzureAppServiceState {
   }
 
   @Override
-  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+  protected Artifact getWebAppPackageArtifact(ExecutionContext context) {
     return null;
   }
 

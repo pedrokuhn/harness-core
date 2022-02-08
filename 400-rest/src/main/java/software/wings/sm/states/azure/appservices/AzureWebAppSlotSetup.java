@@ -275,12 +275,12 @@ public class AzureWebAppSlotSetup extends AbstractAzureAppServiceState {
   }
 
   @Override
-  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+  protected Artifact getWebAppPackageArtifact(ExecutionContext context) {
     if (azureVMSSStateHelper.isWebAppDockerDeployment(context)) {
       return null;
     }
 
-    return azureVMSSStateHelper.getWebAppNonContainerArtifact(context);
+    return azureVMSSStateHelper.getWebAppPackageArtifact(context);
   }
 
   @Override

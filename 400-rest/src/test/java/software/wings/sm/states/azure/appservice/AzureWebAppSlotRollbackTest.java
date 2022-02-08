@@ -172,7 +172,7 @@ public class AzureWebAppSlotRollbackTest extends WingsBaseTest {
     doReturn(false).when(azureVMSSStateHelper).isWebAppDockerDeployment(mockContext);
     doReturn(Optional.of(rollbackActivity))
         .when(azureVMSSStateHelper)
-        .getWebAppNonContainerRollbackActivity(mockContext, serviceId);
+        .getWebAppPackageRollbackActivity(mockContext, serviceId);
     doReturn(rollbackContext)
         .when(azureVMSSStateHelper)
         .getExecutionContext(appId, workflowId, stateExecutionInstanceId);
@@ -294,7 +294,7 @@ public class AzureWebAppSlotRollbackTest extends WingsBaseTest {
       doThrow(Exception.class).when(delegateService).queueTask(any());
     }
 
-    doReturn(Optional.of(artifact)).when(azureVMSSStateHelper).getWebAppNonContainerArtifactForRollback(any());
+    doReturn(Optional.of(artifact)).when(azureVMSSStateHelper).getWebAppPackageArtifactForRollback(any());
 
     String accountId = "accountId";
     ArtifactoryConfig artifactoryConfig = ArtifactoryConfig.builder()

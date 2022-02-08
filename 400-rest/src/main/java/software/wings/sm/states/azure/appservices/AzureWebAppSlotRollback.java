@@ -107,7 +107,7 @@ public class AzureWebAppSlotRollback extends AzureWebAppSlotSetup {
       return true;
     }
 
-    if (!azureVMSSStateHelper.getWebAppNonContainerArtifactForRollback(context).isPresent()) {
+    if (!azureVMSSStateHelper.getWebAppPackageArtifactForRollback(context).isPresent()) {
       setStepSkipMsg("Not found artifact for rollback. Skipping rollback");
       return false;
     }
@@ -122,12 +122,12 @@ public class AzureWebAppSlotRollback extends AzureWebAppSlotSetup {
   }
 
   @Override
-  protected Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+  protected Artifact getWebAppPackageArtifact(ExecutionContext context) {
     if (azureVMSSStateHelper.isWebAppDockerDeployment(context)) {
       return null;
     }
 
-    return azureVMSSStateHelper.getWebAppNonContainerArtifactForRollbackExceptionally(context);
+    return azureVMSSStateHelper.getWebAppPackageArtifactForRollbackExceptionally(context);
   }
 
   @Override

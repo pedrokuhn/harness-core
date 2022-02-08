@@ -203,7 +203,7 @@ public class AzureVMSSStateHelper {
     return phaseElement.getServiceElement().getUuid();
   }
 
-  public Artifact getWebAppNonContainerArtifact(ExecutionContext context) {
+  public Artifact getWebAppPackageArtifact(ExecutionContext context) {
     String serviceId = getServiceId(context);
     Artifact artifact = getArtifact((DeploymentExecutionContext) context, serviceId);
 
@@ -213,25 +213,25 @@ public class AzureVMSSStateHelper {
     return artifact;
   }
 
-  public Artifact getWebAppNonContainerArtifactForRollbackExceptionally(ExecutionContext context) {
+  public Artifact getWebAppPackageArtifactForRollbackExceptionally(ExecutionContext context) {
     String serviceId = getServiceId(context);
-    return getWebAppNonContainerArtifactForRollback(context, serviceId)
+    return getWebAppPackageArtifactForRollback(context, serviceId)
         .orElseThrow(
             () -> new InvalidArgumentsException(format("Not found artifact for rollback, serviceId: %s", serviceId)));
   }
 
-  public Optional<Artifact> getWebAppNonContainerArtifactForRollback(ExecutionContext context) {
-    return getWebAppNonContainerArtifactForRollback(context, getServiceId(context));
+  public Optional<Artifact> getWebAppPackageArtifactForRollback(ExecutionContext context) {
+    return getWebAppPackageArtifactForRollback(context, getServiceId(context));
   }
 
   @VisibleForTesting
-  Optional<Artifact> getWebAppNonContainerArtifactForRollback(ExecutionContext context, final String serviceId) {
+  Optional<Artifact> getWebAppPackageArtifactForRollback(ExecutionContext context, final String serviceId) {
     if (workflowExecutionService.checkIfOnDemand(context.getAppId(), context.getWorkflowExecutionId())) {
       return serviceResourceService.findArtifactForOnDemandWorkflow(
           context.getAppId(), context.getWorkflowExecutionId());
     }
 
-    Optional<Activity> rollbackActivity = getWebAppNonContainerRollbackActivity(context, serviceId);
+    Optional<Activity> rollbackActivity = getWebAppPackageRollbackActivity(context, serviceId);
     return rollbackActivity.map(activity -> artifactService.getWithSource(activity.getArtifactId()));
   }
 
@@ -240,7 +240,7 @@ public class AzureVMSSStateHelper {
   // - get pre-latest success workflow execution by app id, workflow id and service id,
   // - get pre-latest success workflow execution activities
   // - get AZURE_WEBAPP_SLOT_SETUP step activity
-  public Optional<Activity> getWebAppNonContainerRollbackActivity(ExecutionContext context, final String serviceId) {
+  public Optional<Activity> getWebAppPackageRollbackActivity(ExecutionContext context, final String serviceId) {
     String appId = context.getAppId();
     String workflowId = context.getWorkflowId();
     int executionsToSkip = 1;
