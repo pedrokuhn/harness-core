@@ -45,6 +45,7 @@ import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.security.annotations.PublicApi;
 import io.harness.security.annotations.PublicApiWithWhitelist;
 import io.harness.security.annotations.ScimAPI;
+import io.harness.security.dto.Principal;
 
 import software.wings.beans.AuthToken;
 import software.wings.beans.User;
@@ -323,6 +324,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       Map<String, Claim> claimMap = verifyJWTToken(tokenString, secretManager.getJWTSecret(JWT_CATEGORY.AUTH_SECRET));
       if (!claimMap.containsKey("exp")) {
         log.warn(this.getClass().getName() + " verifies JWT Token without Expiry Date.");
+        Principal principal = SecurityContextBuilder.getPrincipalFromClaims(claimMap);
+        if (principal != null) {
+          log.warn(String.format("Principal is not null, its type is %s and its name is %s",
+              principal.getType().toString(), principal.getName()));
+        }
       }
       SecurityContextBuilder.setContext(claimMap);
     }

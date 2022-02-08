@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.SPACE;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
+import io.harness.security.dto.Principal;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
@@ -51,6 +52,11 @@ public class JWTTokenServiceUtils {
     Map<String, Claim> claimMap = verifyJWTToken(serviceToken, serviceSecret);
     if (!claimMap.containsKey("exp")) {
       log.warn("JWTTokenServiceUtils Class verifies JWT Token without Expiry Date.");
+      Principal principal = SecurityContextBuilder.getPrincipalFromClaims(claimMap);
+      if (principal != null) {
+        log.warn(String.format("Principal is not null, its type is %s and its name is %s",
+            principal.getType().toString(), principal.getName()));
+      }
     }
     return Pair.of(true, claimMap);
   }

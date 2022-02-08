@@ -68,6 +68,8 @@ import io.harness.notification.notificationclient.NotificationClient;
 import io.harness.outbox.api.OutboxService;
 import io.harness.remote.client.RestClientUtils;
 import io.harness.repositories.invites.spring.InviteRepository;
+import io.harness.security.SecurityContextBuilder;
+import io.harness.security.dto.Principal;
 import io.harness.user.remote.UserClient;
 import io.harness.user.remote.UserFilterNG;
 import io.harness.utils.PageUtils;
@@ -601,6 +603,11 @@ public class InviteServiceImpl implements InviteService {
     Map<String, Claim> claims = jwtGeneratorUtils.verifyJWTToken(token, jwtPasswordSecret);
     if (!claims.containsKey("exp")) {
       log.warn(this.getClass().getName() + " verifies JWT Token without Expiry Date");
+      Principal principal = SecurityContextBuilder.getPrincipalFromClaims(claims);
+      if (principal != null) {
+        log.warn(String.format("Principal is not null, its type is %s and its name is %s",
+            principal.getType().toString(), principal.getName()));
+      }
     }
     if (!claims.containsKey(InviteKeys.id)) {
       return Optional.empty();
