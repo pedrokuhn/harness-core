@@ -531,21 +531,26 @@ public class WebHookServiceImpl implements WebHookService {
     String webHookSecret = triggerCondition.getWebHookSecret();
 
     Application app = appService.get(trigger.getAppId());
-    if (isEmpty(webHookSecret) && isEmpty(hashedPayload)) {
-      return;
-    }
 
-    if (app.getAreWebHookSecretsMandated() && (isNotEmpty(webHookSecret) || isEmpty(hashedPayload)) ) {
-      throw new InvalidRequestException("WebHookSecrets are mandated for Harness trigger! " + webhookSource);
+    if (app.getAreWebHookSecretsMandated()) {
+      if(isNotEmpty(webHookSecret) || isEmpty(hashedPayload)){
+        throw new InvalidRequestException("WebHookSecrets are mandated for Harness trigger! " + webhookSource);
+      }
     }
-    if (isNotEmpty(webHookSecret) && isEmpty(hashedPayload)) {
-      throw new InvalidRequestException("Harness trigger has webhook secret but its not present in " + webhookSource);
-    }
-    if (isEmpty(webHookSecret) && isNotEmpty(hashedPayload)) {
-      throw new InvalidRequestException(
-          "Webhook secret is present in " + webhookSource + " but harness trigger doesn't have it");
-    }
+    else {
+      if (isEmpty(webHookSecret) && isEmpty(hashedPayload)) {
+        return;
+      }
 
+
+      if (isNotEmpty(webHookSecret) && isEmpty(hashedPayload)) {
+        throw new InvalidRequestException("Harness trigger has webhook secret but its not present in " + webhookSource);
+      }
+      if (isEmpty(webHookSecret) && isNotEmpty(hashedPayload)) {
+        throw new InvalidRequestException(
+                "Webhook secret is present in " + webhookSource + " but harness trigger doesn't have it");
+      }
+    }
     Optional<EncryptedDataDetail> encryptedDataDetail =
         secretManager.encryptedDataDetails(accountId, null, webHookSecret, null);
     if (!encryptedDataDetail.isPresent()) {

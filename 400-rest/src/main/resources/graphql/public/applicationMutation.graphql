@@ -65,8 +65,7 @@ input UpdateApplicationInput {
   # Beta: When this is set to true, all manual triggers will require API Key authorization.
   # Doc link: https://docs.harness.io/article/mc2lxsas4c-trigger-a-deployment-using-c-url#option_enforce_api_keys_for_manual_triggers
   isManualTriggerAuthorized: Boolean
-  AreWebHookSecretsMandated: Boolean
-
+  areWebHookSecretsMandated: Boolean
 }
 
 input DeleteApplicationInput {
