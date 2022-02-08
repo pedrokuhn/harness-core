@@ -7,20 +7,12 @@
 
 package io.harness.accesscontrol.roleassignments.privileged;
 
-import static io.harness.accesscontrol.common.filter.ManagedFilter.NO_FILTER;
-import static io.harness.accesscontrol.common.filter.ManagedFilter.ONLY_CUSTOM;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
-
 import io.harness.accesscontrol.acl.PermissionCheck;
 import io.harness.accesscontrol.acl.PermissionCheckResult;
-import io.harness.accesscontrol.common.filter.ManagedFilter;
 import io.harness.accesscontrol.principals.Principal;
 import io.harness.accesscontrol.roleassignments.privileged.persistence.PrivilegedRoleAssignmentDao;
 import io.harness.accesscontrol.roles.PrivilegedRole;
 import io.harness.accesscontrol.roles.PrivilegedRolesConfig;
-import io.harness.accesscontrol.scopes.core.Scope;
-import io.harness.accesscontrol.scopes.core.ScopeLevel;
-import io.harness.accesscontrol.scopes.harness.HarnessScopeLevel;
 import io.harness.accesscontrol.support.SupportPreference;
 import io.harness.accesscontrol.support.SupportService;
 import io.harness.annotations.dev.HarnessTeam;
@@ -33,12 +25,10 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
@@ -50,16 +40,13 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
   private final PrivilegedRoleAssignmentDao dao;
   private final Set<PrivilegedRole> privilegedRoles;
   private final SupportService supportService;
-  private final Map<String, ScopeLevel> scopeLevelsByResourceType;
   private final String PRIVILEGED_ROLES_CONFIG_PATH = "io/harness/accesscontrol/roles/privileged-roles.yml";
 
   @Inject
   public PrivilegedRoleAssignmentServiceImpl(
-      PrivilegedRoleAssignmentDao dao, SupportService supportService, Map<String, ScopeLevel> scopeLevels) {
+      PrivilegedRoleAssignmentDao dao, SupportService supportService) {
     this.dao = dao;
     this.supportService = supportService;
-    this.scopeLevelsByResourceType = new HashMap<>();
-    scopeLevels.values().forEach(scopeLevel -> scopeLevelsByResourceType.put(scopeLevel.getResourceType(), scopeLevel));
     this.privilegedRoles = getPrivilegedRoles();
   }
 
@@ -76,55 +63,58 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
 
   @Override
   public PrivilegedAccessResult checkAccess(PrivilegedAccessCheck privilegedAccessCheck) {
-    List<PermissionCheckResult> permissionCheckResults =
-        privilegedAccessCheck.getPermissionChecks()
-            .stream()
-            .map(permissionCheck
-                -> checkAccess(privilegedAccessCheck.getAccountIdentifier(), privilegedAccessCheck.getPrincipal(),
-                    permissionCheck))
-            .collect(Collectors.toList());
+    List<PermissionCheck> permissionChecks = privilegedAccessCheck.getPermissionChecks();
+    SupportPreference supportPreference =
+            supportService.fetchSupportPreference(privilegedAccessCheck.getAccountIdentifier());
+
+    if ( supportPreference.isSupportEnabled() ) {
+      Set<String> allAllowedPermissions = getAllAllowedPermissions(privilegedAccessCheck.getPrincipal());
+
+
+      return PrivilegedAccessResult.builder()
+              .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
+              .principal(privilegedAccessCheck.getPrincipal())
+              .permissionCheckResults(
+                      permissionChecks.stream()
+                              .map(permissionCheck -> checkAccess(permissionCheck, allAllowedPermissions))
+                              .collect(Collectors.toList())
+              )
+              .build();
+    }
 
     return PrivilegedAccessResult.builder()
-        .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
-        .principal(privilegedAccessCheck.getPrincipal())
-        .permissionCheckResults(permissionCheckResults)
-        .build();
+            .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
+            .principal(privilegedAccessCheck.getPrincipal())
+            .permissionCheckResults(
+                    permissionChecks.stream()
+                            .map(permissionCheck -> getPermissionCheckResult(permissionCheck, false))
+                            .collect(Collectors.toList())
+            )
+            .build();
   }
 
-  private PermissionCheckResult checkAccess(
-      String accountIdentifier, Principal principal, PermissionCheck permissionCheck) {
-    SupportPreference supportPreference = supportService.fetchSupportPreference(accountIdentifier);
-    ManagedFilter managedFilter = supportPreference.isSupportEnabled() ? NO_FILTER : ONLY_CUSTOM;
-    Scope resourceScope = permissionCheck.getResourceScope() == null
-        ? Scope.builder().level(HarnessScopeLevel.ACCOUNT).instanceId(accountIdentifier).build()
-        : permissionCheck.getResourceScope();
-    if (scopeLevelsByResourceType.containsKey(permissionCheck.getResourceType())
-        && !resourceScope.getLevel().getResourceType().equals(permissionCheck.getResourceType())
-        && isNotEmpty(permissionCheck.getResourceIdentifier())) {
-      resourceScope = Scope.builder()
-                          .level(scopeLevelsByResourceType.get(permissionCheck.getResourceType()))
-                          .parentScope(resourceScope)
-                          .instanceId(permissionCheck.getResourceIdentifier())
-                          .build();
-    }
-    Set<Scope> privilegedRoleAssignmentScopes = new HashSet<>();
-    while (resourceScope != null) {
-      privilegedRoleAssignmentScopes.add(resourceScope);
-      resourceScope = resourceScope.getParentScope();
-    }
-    Set<String> allAllowedPermissions = getAllAllowedPermissions(principal,
-        privilegedRoleAssignmentScopes.stream().map(Scope::toString).collect(Collectors.toSet()), managedFilter);
+  private static PermissionCheckResult getPermissionCheckResult(PermissionCheck permissionCheck, boolean permitted) {
     return PermissionCheckResult.builder()
-        .resourceScope(permissionCheck.getResourceScope())
-        .resourceType(permissionCheck.getResourceType())
-        .resourceIdentifier(permissionCheck.getResourceIdentifier())
-        .permission(permissionCheck.getPermission())
-        .permitted(allAllowedPermissions.contains(permissionCheck.getPermission()))
-        .build();
+            .resourceScope(permissionCheck.getResourceScope())
+            .resourceType(permissionCheck.getResourceType())
+            .resourceIdentifier(permissionCheck.getResourceIdentifier())
+            .permission(permissionCheck.getPermission())
+            .permitted(permitted)
+            .build() ;
   }
 
-  private Set<String> getAllAllowedPermissions(Principal principal, Set<String> scopes, ManagedFilter managedFilter) {
-    List<PrivilegedRoleAssignment> privilegedRoleAssignments = dao.getByPrincipal(principal, scopes, managedFilter);
+  private PermissionCheckResult checkAccess( PermissionCheck permissionCheck, Set<String> allAllowedPermissions ) {
+    return PermissionCheckResult.builder()
+            .resourceScope(permissionCheck.getResourceScope())
+            .resourceType(permissionCheck.getResourceType())
+            .resourceIdentifier(permissionCheck.getResourceIdentifier())
+            .permission(permissionCheck.getPermission())
+            .permitted(allAllowedPermissions.contains(permissionCheck.getPermission()))
+            .build();
+  }
+
+  private Set<String> getAllAllowedPermissions(Principal principal) {
+    List<PrivilegedRoleAssignment> privilegedRoleAssignments = dao.getByPrincipal(principal);
     Set<String> privilegedRoleIdentifiers =
         privilegedRoleAssignments.stream().map(PrivilegedRoleAssignment::getRoleIdentifier).collect(Collectors.toSet());
     return privilegedRoles.stream()
@@ -135,9 +125,9 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
   }
 
   @Override
-  public void syncManagedGlobalRoleAssignments(Set<Principal> updatedPrincipals, String roleIdentifier) {
+  public void syncRoleAssignments(Set<Principal> updatedPrincipals, String roleIdentifier) {
     List<PrivilegedRoleAssignment> privilegedRoleAssignments =
-        dao.getGlobalByRole(roleIdentifier, ManagedFilter.ONLY_MANAGED);
+        dao.getByRole(roleIdentifier);
     Set<Principal> savedPrincipals = privilegedRoleAssignments.stream()
                                          .map(r
                                              -> Principal.builder()
@@ -150,7 +140,7 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
     Set<Principal> addedPrincipals = Sets.difference(updatedPrincipals, savedPrincipals);
 
     if (!removedPrincipals.isEmpty()) {
-      dao.removeGlobalByPrincipalsAndRole(removedPrincipals, roleIdentifier, ManagedFilter.ONLY_MANAGED);
+      dao.removeByPrincipalsAndRole(removedPrincipals, roleIdentifier);
     }
 
     if (!addedPrincipals.isEmpty()) {
@@ -161,16 +151,9 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
                          .principalIdentifier(principal.getPrincipalIdentifier())
                          .principalType(principal.getPrincipalType())
                          .roleIdentifier(roleIdentifier)
-                         .global(true)
-                         .managed(true)
                          .build())
               .collect(Collectors.toList());
       dao.insertAllIgnoringDuplicates(newRoleAssignments);
     }
-  }
-
-  @Override
-  public void deleteByRoleAssignment(String id) {
-    dao.deleteByRoleAssignment(id, ONLY_CUSTOM);
   }
 }

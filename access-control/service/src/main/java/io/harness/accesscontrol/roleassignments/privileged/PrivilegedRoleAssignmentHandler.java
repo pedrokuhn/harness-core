@@ -36,7 +36,7 @@ public class PrivilegedRoleAssignmentHandler implements RoleAssignmentCRUDEventH
 
   @Override
   public void handleRoleAssignmentDelete(String id) {
-    privilegedRoleAssignmentService.deleteByRoleAssignment(id);
+    // Do Nothing
   }
 
   @Override

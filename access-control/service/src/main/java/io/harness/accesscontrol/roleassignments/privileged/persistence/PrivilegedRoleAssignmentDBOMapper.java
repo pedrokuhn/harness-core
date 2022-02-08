@@ -22,11 +22,6 @@ public class PrivilegedRoleAssignmentDBOMapper {
         .principalType(object.getPrincipalType())
         .principalIdentifier(object.getPrincipalIdentifier())
         .roleIdentifier(object.getRoleIdentifier())
-        .global(object.isGlobal())
-        .scopeIdentifier(object.getScopeIdentifier())
-        .managed(object.isManaged())
-        .linkedRoleAssignment(object.getLinkedRoleAssignment())
-        .userGroupIdentifier(object.getUserGroupIdentifier())
         .build();
   }
 
@@ -35,11 +30,6 @@ public class PrivilegedRoleAssignmentDBOMapper {
         .principalType(object.getPrincipalType())
         .principalIdentifier(object.getPrincipalIdentifier())
         .roleIdentifier(object.getRoleIdentifier())
-        .global(object.isGlobal())
-        .scopeIdentifier(object.getScopeIdentifier())
-        .managed(object.isManaged())
-        .linkedRoleAssignment(object.getLinkedRoleAssignment())
-        .userGroupIdentifier(object.getUserGroupIdentifier())
         .build();
   }
 }

@@ -7,7 +7,6 @@
 
 package io.harness.accesscontrol.roleassignments.privileged.persistence;
 
-import io.harness.accesscontrol.common.filter.ManagedFilter;
 import io.harness.accesscontrol.principals.Principal;
 import io.harness.accesscontrol.roleassignments.privileged.PrivilegedRoleAssignment;
 import io.harness.accesscontrol.roleassignments.privileged.persistence.PrivilegedRoleAssignmentDBO.PrivilegedRoleAssignmentDBOKeys;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
+
 import org.springframework.data.mongodb.core.query.Criteria;
 
 @OwnedBy(HarnessTeam.PL)
@@ -43,73 +43,38 @@ public class PrivilegedRoleAssignmentDaoImpl implements PrivilegedRoleAssignment
 
   @Override
   public List<PrivilegedRoleAssignment> getByPrincipal(
-      Principal principal, Set<String> scopes, ManagedFilter managedFilter) {
-    Criteria scopeCriteria = new Criteria();
-    scopeCriteria.orOperator(Criteria.where(PrivilegedRoleAssignmentDBOKeys.scopeIdentifier).in(scopes),
-        Criteria.where(PrivilegedRoleAssignmentDBOKeys.global).is(true));
+      Principal principal) {
     Criteria userIdentifierCriteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.principalIdentifier)
                                           .is(principal.getPrincipalIdentifier())
                                           .and(PrivilegedRoleAssignmentDBOKeys.principalType)
                                           .is(principal.getPrincipalType());
-    Criteria finalCriteria = getManagedCriteria(managedFilter).andOperator(userIdentifierCriteria, scopeCriteria);
 
-    List<PrivilegedRoleAssignmentDBO> assignments = repository.get(finalCriteria);
+    List<PrivilegedRoleAssignmentDBO> assignments = repository.get(userIdentifierCriteria);
     return assignments.stream().map(PrivilegedRoleAssignmentDBOMapper::fromDBO).collect(Collectors.toList());
   }
 
   @Override
-  public List<PrivilegedRoleAssignment> getGlobalByRole(String roleIdentifier, ManagedFilter managedFilter) {
-    Criteria criteria = getManagedCriteria(managedFilter)
-                            .and(PrivilegedRoleAssignmentDBOKeys.global)
-                            .is(true)
-                            .and(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                            .is(roleIdentifier);
-    List<PrivilegedRoleAssignmentDBO> assignments = repository.get(criteria);
+  public List<PrivilegedRoleAssignment> getByRole(String roleIdentifier) {
+    Criteria roleIdentifierCriteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
+                                      .is(roleIdentifier);
+    List<PrivilegedRoleAssignmentDBO> assignments = repository.get(roleIdentifierCriteria);
     return assignments.stream().map(PrivilegedRoleAssignmentDBOMapper::fromDBO).collect(Collectors.toList());
   }
 
   @Override
-  public long removeGlobalByPrincipalsAndRole(
-      Set<Principal> principals, String roleIdentifier, ManagedFilter managedFilter) {
-    Criteria criteria = getManagedCriteria(managedFilter)
-                            .and(PrivilegedRoleAssignmentDBOKeys.global)
-                            .is(true)
-                            .and(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                            .is(roleIdentifier);
+  public long removeByPrincipalsAndRole(
+      Set<Principal> principals, String roleIdentifier) {
+    Criteria criteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
+                        .is(roleIdentifier);
+
     criteria.orOperator(principals.stream()
                             .map(principal
                                 -> Criteria.where(PrivilegedRoleAssignmentDBOKeys.principalIdentifier)
                                        .is(principal.getPrincipalIdentifier())
                                        .and(PrivilegedRoleAssignmentDBOKeys.principalType)
                                        .is(principal.getPrincipalType()))
-                            .toArray(Criteria[] ::new));
+                            .toArray(Criteria[] ::new)
+    );
     return repository.remove(criteria);
-  }
-
-  @Override
-  public long deleteByRoleAssignment(String id, ManagedFilter managedFilter) {
-    Criteria criteria =
-        getManagedCriteria(managedFilter).and(PrivilegedRoleAssignmentDBOKeys.linkedRoleAssignment).is(id);
-    return repository.remove(criteria);
-  }
-
-  @Override
-  public long deleteByUserGroup(String identifier, String scopeIdentifier, ManagedFilter managedFilter) {
-    Criteria criteria = getManagedCriteria(managedFilter)
-                            .and(PrivilegedRoleAssignmentDBOKeys.userGroupIdentifier)
-                            .is(identifier)
-                            .and(PrivilegedRoleAssignmentDBOKeys.scopeIdentifier)
-                            .is(scopeIdentifier);
-    return repository.remove(criteria);
-  }
-
-  private Criteria getManagedCriteria(ManagedFilter managedFilter) {
-    if (ManagedFilter.ONLY_MANAGED.equals(managedFilter)) {
-      return Criteria.where(PrivilegedRoleAssignmentDBOKeys.managed).is(true);
-    }
-    if (ManagedFilter.ONLY_CUSTOM.equals(managedFilter)) {
-      return Criteria.where(PrivilegedRoleAssignmentDBOKeys.managed).is(false);
-    }
-    return new Criteria();
   }
 }

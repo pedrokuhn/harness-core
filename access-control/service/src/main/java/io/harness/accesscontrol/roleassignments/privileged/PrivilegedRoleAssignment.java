@@ -16,17 +16,14 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;
 import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @OwnedBy(HarnessTeam.PL)
 @Value
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PrivilegedRoleAssignment {
-  String scopeIdentifier;
-  boolean global;
   @Wither @NotNull PrincipalType principalType;
   @Wither @NotEmpty String principalIdentifier;
   @NotEmpty String roleIdentifier;
-  String linkedRoleAssignment;
-  @Wither String userGroupIdentifier;
-  boolean managed;
 }

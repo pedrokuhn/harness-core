@@ -62,11 +62,6 @@ public class PrivilegedRoleAssignmentDBO implements PersistentEntity, AccessCont
   @NotNull final PrincipalType principalType;
   @NotEmpty final String principalIdentifier;
   @NotEmpty final String roleIdentifier;
-  final String linkedRoleAssignment;
-  final String userGroupIdentifier;
-  final boolean global;
-  final String scopeIdentifier;
-  final boolean managed;
 
   @Setter @CreatedDate Long createdAt;
   @Setter @LastModifiedDate Long lastModifiedAt;
@@ -82,16 +77,11 @@ public class PrivilegedRoleAssignmentDBO implements PersistentEntity, AccessCont
                  .field(PrivilegedRoleAssignmentDBOKeys.principalType)
                  .field(PrivilegedRoleAssignmentDBOKeys.principalIdentifier)
                  .field(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                 .field(PrivilegedRoleAssignmentDBOKeys.managed)
-                 .field(PrivilegedRoleAssignmentDBOKeys.scopeIdentifier)
-                 .field(PrivilegedRoleAssignmentDBOKeys.linkedRoleAssignment)
                  .build())
         .add(CompoundMongoIndex.builder()
                  .name("queryIndex")
                  .unique(false)
                  .field(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                 .field(PrivilegedRoleAssignmentDBOKeys.global)
-                 .field(PrivilegedRoleAssignmentDBOKeys.managed)
                  .build())
         .build();
   }
