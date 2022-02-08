@@ -54,6 +54,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -365,7 +366,7 @@ public class YamlGitServiceImpl implements YamlGitService {
   }
 
   private void insertErrorDuringYamlCollection(String accountId, String appId, List<FullSyncError> yamlErrors) {
-    yamlErrors.forEach(yamlError -> {
+    emptyIfNull(yamlErrors).forEach(yamlError -> {
       gitSyncErrorService.upsertGitSyncErrors(yamlError.getGitFileChange(), yamlError.getError(), true, false);
     });
   }
