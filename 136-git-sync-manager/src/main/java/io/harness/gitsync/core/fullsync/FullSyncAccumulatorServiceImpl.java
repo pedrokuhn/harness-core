@@ -95,6 +95,7 @@ public class FullSyncAccumulatorServiceImpl implements FullSyncAccumulatorServic
     }
 
     if (!isEntitiesAvailableForFullSync) {
+      log.info("No entities to perform full-sync for message id {}", messageId);
       return;
     }
     if (fullSyncEventRequest.getIsNewBranch()) {
