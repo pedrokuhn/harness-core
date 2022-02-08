@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Harness Inc. All rights reserved.
+ * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+ * that can be found in the licenses directory at the root of this repository, also available at
+ * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+ */
+
 package io.harness.azure.impl;
 
 import static io.harness.azure.model.AzureConstants.FAIL_DEPLOYMENT_ERROR_MSG;
@@ -98,7 +105,7 @@ public class SlotContainerLogStreamer {
       timeStampBeginIndex = matcher.start();
     }
 
-    if ((timeStampBeginIndex < containerLogs.length()) && operationNotCompleted()) {
+    if ((timeStampBeginIndex < containerLogs.length()) && operationNotCompleted() && dateTime.isAfter(lastTime)) {
       String logLine = containerLogs.substring(timeStampBeginIndex);
       logCallback.saveExecutionLog(logLine);
       verifyContainerLogLine(logLine);

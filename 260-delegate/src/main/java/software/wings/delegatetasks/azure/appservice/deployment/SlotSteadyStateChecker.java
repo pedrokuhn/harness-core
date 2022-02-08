@@ -83,6 +83,8 @@ public class SlotSteadyStateChecker {
       LogCallback logCallback, SlotStatusVerifier slotStatusVerifier) throws Exception {
     Callable<Object> objectCallable = () -> {
       while (true) {
+        sleep(ofSeconds(statusCheckIntervalInSeconds));
+
         if (slotStatusVerifier.operationFailed()) {
           String errorMessage = slotStatusVerifier.getErrorMessage();
           logCallback.saveExecutionLog(errorMessage, LogLevel.ERROR, FAILURE);
@@ -92,7 +94,6 @@ public class SlotSteadyStateChecker {
         if (slotStatusVerifier.hasReachedSteadyState()) {
           return Boolean.TRUE;
         }
-        sleep(ofSeconds(statusCheckIntervalInSeconds));
       }
     };
 
