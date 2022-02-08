@@ -53,10 +53,8 @@ public class JWTTokenServiceUtils {
     if (!claimMap.containsKey("exp")) {
       log.warn("JWTTokenServiceUtils Class verifies JWT Token without Expiry Date.");
       Principal principal = SecurityContextBuilder.getPrincipalFromClaims(claimMap);
-      if (principal != null) {
-        log.warn(String.format("Principal is not null, its type is %s and its name is %s",
-            principal.getType().toString(), principal.getName()));
-      }
+      log.warn(String.format("Principal is not null, its type is %s and its name is %s", principal.getType().toString(),
+          principal.getName()));
     }
     return Pair.of(true, claimMap);
   }
