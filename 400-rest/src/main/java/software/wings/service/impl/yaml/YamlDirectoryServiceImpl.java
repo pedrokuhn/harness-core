@@ -450,8 +450,8 @@ public class YamlDirectoryServiceImpl implements YamlDirectoryService {
         exceptionThrown = true;
         String fileName = dn.getName() == null ? dn.getName() : path + PATH_DELIMITER + dn.getName();
         String message;
-        if (isNotBlank(e.getMessage())) {
-          message = e.getMessage();
+        if (isNotBlank(ExceptionUtils.getMessage(e))) {
+          message = ExceptionUtils.getMessage(e);
         } else {
           message = "Failed in yaml conversion during Harness to Git full sync for file:" + fileName;
         }
