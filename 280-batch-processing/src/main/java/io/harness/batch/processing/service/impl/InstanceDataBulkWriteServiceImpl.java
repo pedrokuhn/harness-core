@@ -112,7 +112,9 @@ public class InstanceDataBulkWriteServiceImpl implements InstanceDataBulkWriteSe
 
           BasicDBObject updateOperations =
               new BasicDBObject(InstanceDataKeys.instanceState, InstanceState.RUNNING.name())
-                  .append(InstanceDataKeys.lastUpdatedAt, Instant.now().toEpochMilli());
+                  .append(InstanceDataKeys.lastUpdatedAt, Instant.now().toEpochMilli())
+                  .append(InstanceDataKeys.activeInstanceIterator,
+                      ActiveInstanceIterator.getActiveInstanceIteratorFromStartTime(instanceTime));
 
           bulkWriteOperation.find(filter).update(
               new BasicDBObject("$set", updateOperations)
