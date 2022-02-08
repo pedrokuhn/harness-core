@@ -21,11 +21,11 @@ from google.cloud import bigquery
 from util import create_dataset, if_tbl_exists, createTable, print_, TABLE_NAME_FORMAT
 from aws_util import assumed_role_session, STATIC_REGION
 
-jsonData = {
-	"accountId": "kmpySmUISimoRrJL6NL73w",
-	"roleArn": "arn:aws:iam::132359207506:role/RDSInventoryRole",
-	"externalId": "harness:108817434118:kmpySmUISimoRrJL6NL73w"
-}
+# jsonData = {
+# 	"accountId": "kmpySmUISimoRrJL6NL73w",
+# 	"roleArn": "arn:aws:iam::132359207506:role/RDSInventoryRole",
+# 	"externalId": "harness:108817434118:kmpySmUISimoRrJL6NL73w"
+# }
 
 PROJECTID = os.environ.get('GCP_PROJECT', 'ccm-play')
 client = bigquery.Client(PROJECTID)
