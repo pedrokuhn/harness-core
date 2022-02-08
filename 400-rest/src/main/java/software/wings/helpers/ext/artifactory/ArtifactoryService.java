@@ -84,4 +84,7 @@ public interface ArtifactoryService {
   Long getFileSize(ArtifactoryConfigRequest artifactoryConfig, Map<String, String> metadata);
 
   void checkIfValidHelmRepository(ArtifactoryConfigRequest artifactoryConfigRequest, String repoName);
+
+  boolean helmChartWithVersionExists(
+      ArtifactoryConfigRequest artifactoryConfigRequest, String repoName, String version, String chartName);
 }

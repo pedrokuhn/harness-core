@@ -13,6 +13,7 @@ import static io.harness.artifactory.ArtifactoryClientImpl.getBaseUrl;
 import static io.harness.artifactory.ArtifactoryClientImpl.handleAndRethrow;
 import static io.harness.artifactory.ArtifactoryClientImpl.handleErrorResponse;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.eraro.ErrorCode.ARTIFACT_SERVER_ERROR;
 import static io.harness.eraro.ErrorCode.INVALID_ARTIFACT_SERVER;
 import static io.harness.exception.WingsException.USER;
@@ -52,6 +53,7 @@ import software.wings.delegatetasks.collect.artifacts.ArtifactCollectionTaskHelp
 import software.wings.helpers.ext.jenkins.BuildDetails;
 import software.wings.utils.RepositoryType;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.InputStream;
@@ -667,5 +669,25 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
                        "Build# " + constructBuildNumber(artifactPath, path.substring(path.indexOf('/') + 1)))
                    .build())
         .collect(toList());
+  }
+
+  @Override
+  public boolean helmChartWithVersionExists(
+      ArtifactoryConfigRequest artifactoryConfigRequest, String repoName, String version, String chartName) {
+    log.info("Checking if helm chart with version exists for {}", chartName + "-" + version);
+    Artifactory artifactory = getArtifactoryClient(artifactoryConfigRequest);
+    String errorOccurredWhileRetrievingRepositories = "Error occurred while validating helm chart version";
+    try {
+      List<RepoPath> repoPaths = artifactory.searches()
+                                     .itemsByProperty()
+                                     .property("chart.name", chartName)
+                                     .property("chart.version", version)
+                                     .doSearch();
+      return isNotEmpty(repoPaths);
+    } catch (Exception e) {
+      log.error(errorOccurredWhileRetrievingRepositories, e);
+      handleAndRethrow(e, USER);
+    }
+    return false;
   }
 }

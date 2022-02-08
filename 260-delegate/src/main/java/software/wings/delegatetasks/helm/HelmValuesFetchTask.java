@@ -34,6 +34,7 @@ import io.harness.logging.CommandExecutionStatus;
 import io.harness.secret.SecretSanitizerThreadLocal;
 
 import software.wings.beans.command.ExecutionLogCallback;
+import software.wings.beans.settings.helm.HttpHelmRepoConfig;
 import software.wings.delegatetasks.DelegateLogService;
 import software.wings.delegatetasks.ExceptionMessageSanitizer;
 import software.wings.helpers.ext.helm.request.HelmChartConfigParams;
@@ -55,6 +56,7 @@ import org.apache.commons.lang3.NotImplementedException;
 public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
   @Inject private HelmTaskHelper helmTaskHelper;
   @Inject private DelegateLogService delegateLogService;
+  @Inject private ArtifactoryHelmTaskHelper artifactoryHelmTaskHelper;
 
   public HelmValuesFetchTask(DelegateTaskPackage delegateTaskPackage, ILogStreamingTaskClient logStreamingTaskClient,
       Consumer<DelegateTaskResponse> consumer, BooleanSupplier preExecute) {
@@ -73,6 +75,26 @@ public class HelmValuesFetchTask extends AbstractDelegateRunnableTask {
       executionLogCallback.saveExecutionLog(color("\nFetching values.yaml from helm chart for Service", White, Bold));
 
       HelmChartConfigParams helmChartConfigParams = taskParams.getHelmChartConfigTaskParams();
+
+      if (helmChartConfigParams.isBypassHelmFetch()
+          && helmChartConfigParams.getHelmRepoConfig() instanceof HttpHelmRepoConfig
+          && ((HttpHelmRepoConfig) helmChartConfigParams.getHelmRepoConfig())
+                 .getChartRepoUrl()
+                 .contains("/artifactory/")) {
+        if (!artifactoryHelmTaskHelper.checkIfVersionExistsInArtifactory(helmChartConfigParams.getHelmRepoConfig(),
+                helmChartConfigParams.getEncryptedDataDetails(), helmChartConfigParams.getChartName(),
+                helmChartConfigParams.getChartVersion())) {
+          final String errorMessage = format("HelmChart with name %s and version %s not found in artifactory repo",
+              helmChartConfigParams.getChartName(), helmChartConfigParams.getChartVersion());
+          log.error(errorMessage);
+          executionLogCallback.saveExecutionLog(errorMessage, ERROR, CommandExecutionStatus.FAILURE);
+
+          return HelmValuesFetchTaskResponse.builder()
+              .commandExecutionStatus(FAILURE)
+              .errorMessage(errorMessage)
+              .build();
+        }
+      }
 
       Map<String, List<String>> mapK8sValuesLocationToContent = helmTaskHelper.getValuesYamlFromChart(
           helmChartConfigParams, taskParams.getTimeoutInMillis(), taskParams.getHelmCommandFlag(),

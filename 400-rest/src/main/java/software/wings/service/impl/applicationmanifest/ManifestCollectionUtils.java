@@ -101,7 +101,6 @@ public class ManifestCollectionUtils {
         .publishedVersions(getPublishedVersionsForAppManifest(accountId, appManifestId))
         .helmChartConfigParams(helmChartConfigParamsBuilder.build())
         .useRepoFlags(useRepoFlags)
-        .bypassHelmFetch(featureFlagService.isEnabled(FeatureName.BYPASS_HELM_FETCH, accountId))
         .build();
   }
 
@@ -139,7 +138,6 @@ public class ManifestCollectionUtils {
         .publishedVersions(getPublishedVersionsForAppManifest(accountId, appManifestId))
         .helmChartConfigParams(helmChartConfigParamsBuilder.build())
         .useRepoFlags(useRepoFlags)
-        .bypassHelmFetch(featureFlagService.isEnabled(FeatureName.USE_HELM_REPO_FLAGS, accountId))
         .collectionType(helmChartCollectionType)
         .build();
   }
@@ -168,6 +166,7 @@ public class ManifestCollectionUtils {
             .repoName(convertBase64UuidToCanonicalForm(appManifestId))
             .repoDisplayName(settingAttribute.getName())
             .helmVersion(helmVersion)
+            .bypassHelmFetch(featureFlagService.isEnabled(FeatureName.USE_HELM_REPO_FLAGS, accountId))
             .helmRepoConfig(helmRepoConfig);
 
     if (isNotBlank(helmRepoConfig.getConnectorId())) {

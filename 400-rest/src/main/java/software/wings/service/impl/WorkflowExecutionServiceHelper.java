@@ -10,6 +10,7 @@ package software.wings.service.impl;
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.beans.ExecutionStatus.ERROR;
 import static io.harness.beans.ExecutionStatus.FAILED;
+import static io.harness.beans.FeatureName.BYPASS_HELM_FETCH;
 import static io.harness.beans.OrchestrationWorkflowType.BUILD;
 import static io.harness.beans.WorkflowType.ORCHESTRATION;
 import static io.harness.beans.WorkflowType.PIPELINE;
@@ -228,7 +229,9 @@ public class WorkflowExecutionServiceHelper {
     if (isNotEmpty(executionArgs.getHelmCharts())) {
       stdParams.setHelmChartIds(
           executionArgs.getHelmCharts().stream().map(HelmChart::getUuid).filter(Objects::nonNull).collect(toList()));
-      stdParams.setHelmCharts(executionArgs.getHelmCharts());
+      if (featureFlagService.isEnabled(BYPASS_HELM_FETCH, workflow.getAccountId())) {
+        stdParams.setHelmCharts(executionArgs.getHelmCharts());
+      }
     }
 
     stdParams.setExecutionCredential(executionArgs.getExecutionCredential());

@@ -64,7 +64,7 @@ public class HelmCollectChartTask extends AbstractDelegateRunnableTask {
 
     try {
       List<HelmChart> helmCharts;
-      if (taskParams.isBypassHelmFetch()
+      if (taskParams.getHelmChartConfigParams().isBypassHelmFetch()
           && taskParams.getHelmChartConfigParams().getHelmRepoConfig() instanceof HttpHelmRepoConfig
           && ((HttpHelmRepoConfig) taskParams.getHelmChartConfigParams().getHelmRepoConfig())
                  .getChartRepoUrl()

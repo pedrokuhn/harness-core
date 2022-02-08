@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.jexl3.JexlException;
@@ -238,6 +239,17 @@ public class WorkflowStandardParams implements ExecutionContextAware, ContextEle
     if (isEmpty(helmCharts) && isNotEmpty(helmChartIds)) {
       helmCharts = helmChartService.listByIds(getApp().getAccountId(), helmChartIds);
     }
+
+    if (featureFlagService.isEnabled(FeatureName.BYPASS_HELM_FETCH, getApp().getAccountId())) {
+      List<String> helmChartAsIds = helmCharts.stream()
+                                        .map(HelmChart::getUuid)
+                                        .filter(id -> !helmChartIds.contains(id))
+                                        .collect(Collectors.toList());
+      if (!isNotEmpty(helmChartAsIds)) {
+        helmCharts.addAll(helmChartService.listByIds(getApp().getAccountId(), helmChartAsIds));
+      }
+    }
+
     return helmCharts;
   }
 

@@ -36,7 +36,6 @@ public class HelmChartCollectionParams implements ManifestCollectionParams {
   private HelmChartConfigParams helmChartConfigParams;
   private Set<String> publishedVersions;
   private boolean useRepoFlags;
-  private boolean bypassHelmFetch;
   private HelmChartCollectionType collectionType;
 
   public enum HelmChartCollectionType { ALL, SPECIFIC_VERSION }
@@ -45,7 +44,8 @@ public class HelmChartCollectionParams implements ManifestCollectionParams {
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {
     List<ExecutionCapability> executionCapabilities =
         helmChartConfigParams.fetchRequiredExecutionCapabilities(maskingEvaluator);
-    if (bypassHelmFetch && helmChartConfigParams.getHelmRepoConfig() instanceof HttpHelmRepoConfig
+    if (helmChartConfigParams.isBypassHelmFetch()
+        && helmChartConfigParams.getHelmRepoConfig() instanceof HttpHelmRepoConfig
         && ((HttpHelmRepoConfig) helmChartConfigParams.getHelmRepoConfig())
                .getChartRepoUrl()
                .contains("/artifactory/")) {

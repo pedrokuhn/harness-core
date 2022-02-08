@@ -13,6 +13,7 @@ import io.harness.delegate.task.manifests.request.ManifestCollectionParams;
 import software.wings.beans.appmanifest.HelmChart;
 import software.wings.beans.settings.helm.HttpHelmRepoConfig;
 import software.wings.delegatetasks.ExceptionMessageSanitizer;
+import software.wings.delegatetasks.helm.ArtifactoryHelmTaskHelper;
 import software.wings.helpers.ext.artifactory.ArtifactoryService;
 import software.wings.helpers.ext.helm.request.HelmChartCollectionParams;
 import software.wings.helpers.ext.jenkins.BuildDetails;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class ArtifactoryHelmRepositoryService implements ManifestRepositoryService {
   @Inject ArtifactoryService artifactoryService;
   @Inject EncryptionService encryptionService;
+  @Inject ArtifactoryHelmTaskHelper artifactoryHelmTaskHelper;
 
   @Override
   public List<HelmChart> collectManifests(ManifestCollectionParams params) throws Exception {
@@ -33,23 +35,15 @@ public class ArtifactoryHelmRepositoryService implements ManifestRepositoryServi
     HttpHelmRepoConfig helmRepoConfig =
         (HttpHelmRepoConfig) helmChartCollectionParams.getHelmChartConfigParams().getHelmRepoConfig();
 
-    String baseUrl = helmRepoConfig.getChartRepoUrl().split("/artifactory/", 2)[0] + "/artifactory/";
-    String repoName = helmRepoConfig.getChartRepoUrl().split("/artifactory/", 2)[1];
-    if (repoName.endsWith("/")) {
-      repoName = repoName.substring(0, repoName.length() - 1);
-    }
     encryptionService.decrypt(
         helmRepoConfig, helmChartCollectionParams.getHelmChartConfigParams().getEncryptedDataDetails(), false);
     ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
         helmRepoConfig, helmChartCollectionParams.getHelmChartConfigParams().getEncryptedDataDetails());
-    ArtifactoryConfigRequest request =
-        ArtifactoryConfigRequest.builder()
-            .artifactoryUrl(baseUrl)
-            .username(helmRepoConfig.getUsername())
-            .password(helmRepoConfig.getPassword())
-            .hasCredentials(helmRepoConfig.getUsername() != null || helmRepoConfig.getPassword() != null)
-            .build();
 
+    ArtifactoryConfigRequest request =
+        artifactoryHelmTaskHelper.getArtifactoryConfigRequestFromHelmRepoConfig(helmRepoConfig);
+
+    String repoName = artifactoryHelmTaskHelper.getArtifactoryRepoNameFromHelmConfig(helmRepoConfig);
     artifactoryService.checkIfValidHelmRepository(request, repoName);
 
     List<BuildDetails> buildDetails = artifactoryService.getFilePaths(

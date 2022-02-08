@@ -27,6 +27,7 @@ import static io.harness.beans.ExecutionStatus.SUCCESS;
 import static io.harness.beans.ExecutionStatus.WAITING;
 import static io.harness.beans.ExecutionStatus.activeStatuses;
 import static io.harness.beans.ExecutionStatus.isActiveStatus;
+import static io.harness.beans.FeatureName.BYPASS_HELM_FETCH;
 import static io.harness.beans.FeatureName.HELM_CHART_AS_ARTIFACT;
 import static io.harness.beans.FeatureName.NEW_DEPLOYMENT_FREEZE;
 import static io.harness.beans.FeatureName.RESOLVE_DEPLOYMENT_TAGS_BEFORE_EXECUTION;
@@ -1475,7 +1476,9 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     if (isNotEmpty(executionArgs.getHelmCharts())) {
       stdParams.setHelmChartIds(
           executionArgs.getHelmCharts().stream().map(HelmChart::getUuid).filter(Objects::nonNull).collect(toList()));
-      stdParams.setHelmCharts(executionArgs.getHelmCharts());
+      if (featureFlagService.isEnabled(BYPASS_HELM_FETCH, accountId)) {
+        stdParams.setHelmCharts(executionArgs.getHelmCharts());
+      }
     }
     if (isNotEmpty(executionArgs.getWorkflowVariables())) {
       stdParams.setWorkflowVariables(executionArgs.getWorkflowVariables());
