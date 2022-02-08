@@ -37,7 +37,6 @@ import io.harness.ng.core.dto.OrganizationDTO;
 import io.harness.ng.core.dto.OrganizationFilterDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Organization.OrganizationKeys;
-import io.harness.ng.core.impl.helpers.PlatformInstrumentationHelper;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
 import io.harness.ng.core.user.service.NgUserService;
 import io.harness.outbox.OutboxEvent;
@@ -50,6 +49,8 @@ import io.harness.security.dto.UserPrincipal;
 import io.dropwizard.jersey.validation.JerseyViolationException;
 import java.util.Collections;
 import java.util.Optional;
+
+import io.harness.telemetry.helpers.OrganizationInstrumentationHelper;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class OrganizationServiceImplTest extends CategoryTest {
   @Mock private NgUserService ngUserService;
   @Mock private AccessControlClient accessControlClient;
   @Mock private ScopeAccessHelper scopeAccessHelper;
-  @Mock private PlatformInstrumentationHelper instrumentationHelper;
+  @Mock private OrganizationInstrumentationHelper instrumentationHelper;
   private OrganizationServiceImpl organizationService;
 
   @Before

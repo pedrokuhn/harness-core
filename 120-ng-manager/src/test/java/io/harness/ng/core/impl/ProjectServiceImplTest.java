@@ -50,7 +50,6 @@ import io.harness.ng.core.dto.ProjectFilterDTO;
 import io.harness.ng.core.entities.Organization;
 import io.harness.ng.core.entities.Project;
 import io.harness.ng.core.entities.Project.ProjectKeys;
-import io.harness.ng.core.impl.helpers.PlatformInstrumentationHelper;
 import io.harness.ng.core.remote.ProjectMapper;
 import io.harness.ng.core.remote.utils.ScopeAccessHelper;
 import io.harness.ng.core.services.OrganizationService;
@@ -76,6 +75,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.harness.telemetry.TelemetryReporter;
+import io.harness.telemetry.helpers.ProjectInstrumentationHelper;
 import org.bson.Document;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +106,8 @@ public class ProjectServiceImplTest extends CategoryTest {
   @Mock private NgUserService ngUserService;
   @Mock private AccessControlClient accessControlClient;
   @Mock private ScopeAccessHelper scopeAccessHelper;
-  @InjectMocks PlatformInstrumentationHelper instrumentationHelper;
+  @InjectMocks
+  ProjectInstrumentationHelper instrumentationHelper;
   @Mock private TelemetryReporter telemetryReporter;
   private ProjectServiceImpl projectService;
 

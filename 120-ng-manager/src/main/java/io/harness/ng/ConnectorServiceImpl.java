@@ -65,9 +65,9 @@ import io.harness.gitsync.persistance.GitSyncSdkService;
 import io.harness.logging.AutoLogContext;
 import io.harness.ng.core.activityhistory.NGActivityType;
 import io.harness.ng.core.dto.ErrorDetail;
-import io.harness.ng.core.impl.helpers.PlatformInstrumentationHelper;
 import io.harness.perpetualtask.PerpetualTaskId;
 import io.harness.repositories.ConnectorRepository;
+import io.harness.telemetry.helpers.ConnectorInstrumentationHelper;
 import io.harness.utils.FullyQualifiedIdentifierHelper;
 
 import com.google.common.collect.ImmutableMap;
@@ -100,7 +100,7 @@ public class ConnectorServiceImpl implements ConnectorService {
   private final HarnessManagedConnectorHelper harnessManagedConnectorHelper;
   private final NGErrorHelper ngErrorHelper;
   private final GitSyncSdkService gitSyncSdkService;
-  private final PlatformInstrumentationHelper instrumentationHelper;
+  private final ConnectorInstrumentationHelper instrumentationHelper;
 
   @Inject
   public ConnectorServiceImpl(@Named(DEFAULT_CONNECTOR_SERVICE) ConnectorService defaultConnectorService,
@@ -109,7 +109,7 @@ public class ConnectorServiceImpl implements ConnectorService {
       ConnectorRepository connectorRepository, @Named(EventsFrameworkConstants.ENTITY_CRUD) Producer eventProducer,
       ExecutorService executorService, ConnectorErrorMessagesHelper connectorErrorMessagesHelper,
       HarnessManagedConnectorHelper harnessManagedConnectorHelper, NGErrorHelper ngErrorHelper,
-      GitSyncSdkService gitSyncSdkService, PlatformInstrumentationHelper instrumentationHelper) {
+      GitSyncSdkService gitSyncSdkService, ConnectorInstrumentationHelper instrumentationHelper) {
     this.defaultConnectorService = defaultConnectorService;
     this.secretManagerConnectorService = secretManagerConnectorService;
     this.connectorActivityService = connectorActivityService;
@@ -188,7 +188,7 @@ public class ConnectorServiceImpl implements ConnectorService {
                 connectorHeartbeatTaskId.getId());
           }
         }
-        CompletableFuture.runAsync(() -> instrumentationHelper.sendConnectorCreationFinishEvent(connector.getConnectorInfo(), accountIdentifier));
+        CompletableFuture.runAsync(() -> instrumentationHelper.sendConnectorCreationFinishedEvent(connector.getConnectorInfo(), accountIdentifier));
         return connectorResponse;
       } else {
         throw new InvalidRequestException("Connector could not be created because we could not create the heartbeat");
