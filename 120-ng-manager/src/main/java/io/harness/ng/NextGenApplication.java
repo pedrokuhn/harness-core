@@ -828,9 +828,7 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
 
   private void registerAPIAuthTelemetryFilter(Environment environment, Injector injector) {
     TelemetryReporter telemetryReporter = injector.getInstance(TelemetryReporter.class);
-    ScheduledExecutorService executorService =
-        injector.getInstance(Key.get(ScheduledExecutorService.class, Names.named("ngTelemetryPublisherExecutor")));
-    environment.jersey().register(new APIAuthTelemetryFilter(telemetryReporter, executorService));
+    environment.jersey().register(new APIAuthTelemetryFilter(telemetryReporter));
   }
 
   private void registerInternalApiAuthFilter(NextGenConfiguration configuration, Environment environment) {
