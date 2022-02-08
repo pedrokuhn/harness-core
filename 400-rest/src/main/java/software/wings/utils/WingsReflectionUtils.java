@@ -52,6 +52,9 @@ public class WingsReflectionUtils {
         return true;
       }
     }
+    if (secretId.toLowerCase().startsWith("yaml")) {
+      return true;
+    }
     return false;
   }
 
