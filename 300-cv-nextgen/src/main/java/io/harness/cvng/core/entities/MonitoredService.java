@@ -55,11 +55,12 @@ public final class MonitoredService
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
         .add(CompoundMongoIndex.builder()
-                 .name("unique_query_idx")
-                 .unique(true)
+                 .name("old_unique_query_idx")
                  .field(MonitoredServiceKeys.accountId)
                  .field(MonitoredServiceKeys.orgIdentifier)
                  .field(MonitoredServiceKeys.projectIdentifier)
+                 .field(MonitoredServiceKeys.environmentIdentifier)
+                 .field(MonitoredServiceKeys.serviceIdentifier)
                  .field(MonitoredServiceKeys.identifier)
                  .build())
         .build();
