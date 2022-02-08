@@ -79,6 +79,7 @@ import io.harness.cvng.core.entities.DatadogMetricCVConfig.DatadogMetricCVConfig
 import io.harness.cvng.core.entities.ErrorTrackingCVConfig.ErrorTrackingCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.NewRelicCVConfig.NewRelicCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.PrometheusCVConfig.PrometheusUpdatableEntity;
+import io.harness.cvng.core.entities.SideKick;
 import io.harness.cvng.core.entities.SplunkCVConfig.SplunkCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.StackdriverCVConfig.StackDriverCVConfigUpdatableEntity;
 import io.harness.cvng.core.entities.StackdriverLogCVConfig.StackdriverLogCVConfigUpdatableEntity;
@@ -120,6 +121,8 @@ import io.harness.cvng.core.services.api.PagerDutyService;
 import io.harness.cvng.core.services.api.ParseSampleDataService;
 import io.harness.cvng.core.services.api.PrometheusService;
 import io.harness.cvng.core.services.api.SetupUsageEventService;
+import io.harness.cvng.core.services.api.SideKickExecutor;
+import io.harness.cvng.core.services.api.SideKickService;
 import io.harness.cvng.core.services.api.SplunkService;
 import io.harness.cvng.core.services.api.StackdriverService;
 import io.harness.cvng.core.services.api.SumoLogicService;
@@ -148,6 +151,7 @@ import io.harness.cvng.core.services.impl.DatadogMetricDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.DatadogServiceImpl;
 import io.harness.cvng.core.services.impl.DefaultDeleteEntityByHandler;
 import io.harness.cvng.core.services.impl.DeletedCVConfigServiceImpl;
+import io.harness.cvng.core.services.impl.ErrorTrackingDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.FeatureFlagServiceImpl;
 import io.harness.cvng.core.services.impl.HostRecordServiceImpl;
 import io.harness.cvng.core.services.impl.KubernetesChangeSourceUpdateHandler;
@@ -165,6 +169,7 @@ import io.harness.cvng.core.services.impl.PrometheusServiceImpl;
 import io.harness.cvng.core.services.impl.SLIDataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.ServiceGuardDataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.SetupUsageEventServiceImpl;
+import io.harness.cvng.core.services.impl.SideKickServiceImpl;
 import io.harness.cvng.core.services.impl.SplunkDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.SplunkServiceImpl;
 import io.harness.cvng.core.services.impl.StackdriverDataCollectionInfoMapper;
@@ -185,6 +190,7 @@ import io.harness.cvng.core.services.impl.monitoredService.DatadogLogDataCollect
 import io.harness.cvng.core.services.impl.monitoredService.HealthSourceServiceImpl;
 import io.harness.cvng.core.services.impl.monitoredService.MonitoredServiceServiceImpl;
 import io.harness.cvng.core.services.impl.monitoredService.ServiceDependencyServiceImpl;
+import io.harness.cvng.core.services.impl.sidekickexecutors.DemoActivitySideKickExecutor;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventEntityAndDTOTransformer;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventMetaDataTransformer;
 import io.harness.cvng.core.transformer.changeEvent.HarnessCDChangeEventTransformer;
@@ -229,6 +235,7 @@ import io.harness.cvng.servicelevelobjective.services.api.SLIAnalyserService;
 import io.harness.cvng.servicelevelobjective.services.api.SLIDataProcessorService;
 import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.cvng.servicelevelobjective.services.api.SLODashboardService;
+import io.harness.cvng.servicelevelobjective.services.api.SLOErrorBudgetResetService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
@@ -237,6 +244,7 @@ import io.harness.cvng.servicelevelobjective.services.impl.RatioAnalyserServiceI
 import io.harness.cvng.servicelevelobjective.services.impl.SLIDataProcessorServiceImpl;
 import io.harness.cvng.servicelevelobjective.services.impl.SLIRecordServiceImpl;
 import io.harness.cvng.servicelevelobjective.services.impl.SLODashboardServiceImpl;
+import io.harness.cvng.servicelevelobjective.services.impl.SLOErrorBudgetResetServiceImpl;
 import io.harness.cvng.servicelevelobjective.services.impl.SLOHealthIndicatorServiceImpl;
 import io.harness.cvng.servicelevelobjective.services.impl.ServiceLevelIndicatorServiceImpl;
 import io.harness.cvng.servicelevelobjective.services.impl.ServiceLevelObjectiveServiceImpl;
@@ -419,7 +427,9 @@ public class CVServiceModule extends AbstractModule {
         .to(CustomHealthSourceSpecTransformer.class)
         .in(Scopes.SINGLETON);
     dataSourceTypeToHealthSourceTransformerMapBinder.addBinding(DataSourceType.ERROR_TRACKING)
-        .to(ErrorTrackingHealthSourceSpecTransformer.class);
+        .to(ErrorTrackingHealthSourceSpecTransformer.class)
+        .in(Scopes.SINGLETON);
+
     MapBinder<DataSourceType, DataCollectionInfoMapper> dataSourceTypeDataCollectionInfoMapperMapBinder =
         MapBinder.newMapBinder(binder(), DataSourceType.class, DataCollectionInfoMapper.class);
     dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.APP_DYNAMICS)
@@ -447,6 +457,9 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.DATADOG_LOG)
         .to(DatadogLogDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
+    dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.ERROR_TRACKING)
+        .to(ErrorTrackingDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
 
     MapBinder<DataSourceType, DataCollectionSLIInfoMapper> dataSourceTypeDataCollectionSLIInfoMapperMapBinder =
@@ -559,7 +572,8 @@ public class CVServiceModule extends AbstractModule {
         .to(DatadogLogCVConfigUpdatableEntity.class)
         .in(Scopes.SINGLETON);
     dataSourceTypeCVConfigMapBinder.addBinding(DataSourceType.ERROR_TRACKING)
-        .to(ErrorTrackingCVConfigUpdatableEntity.class);
+        .to(ErrorTrackingCVConfigUpdatableEntity.class)
+        .in(Scopes.SINGLETON);
 
     MapBinder<SLIMetricType, ServiceLevelIndicatorUpdatableEntity> serviceLevelIndicatorMapBinder =
         MapBinder.newMapBinder(binder(), SLIMetricType.class, ServiceLevelIndicatorUpdatableEntity.class);
@@ -660,7 +674,8 @@ public class CVServiceModule extends AbstractModule {
     bind(ChangeEventService.class).to(ChangeEventServiceImpl.class).in(Scopes.SINGLETON);
     bind(ChangeEventEntityAndDTOTransformer.class);
 
-    bind(ServiceLevelObjectiveService.class).to(ServiceLevelObjectiveServiceImpl.class);
+    bind(ServiceLevelObjectiveService.class).to(ServiceLevelObjectiveServiceImpl.class).in(Singleton.class);
+    bind(SLOErrorBudgetResetService.class).to(SLOErrorBudgetResetServiceImpl.class).in(Singleton.class);
     bind(UserJourneyService.class).to(UserJourneyServiceImpl.class);
     bind(ServiceLevelIndicatorService.class).to(ServiceLevelIndicatorServiceImpl.class).in(Singleton.class);
     bind(SLIDataProcessorService.class).to(SLIDataProcessorServiceImpl.class);
@@ -696,7 +711,12 @@ public class CVServiceModule extends AbstractModule {
     sliAnalyserServiceMapBinder.addBinding(SLIMetricType.THRESHOLD)
         .to(ThresholdAnalyserServiceImpl.class)
         .in(Scopes.SINGLETON);
-
+    bind(SideKickService.class).to(SideKickServiceImpl.class);
+    MapBinder<SideKick.Type, SideKickExecutor> sideKickExecutorMapBinder =
+        MapBinder.newMapBinder(binder(), SideKick.Type.class, SideKickExecutor.class);
+    sideKickExecutorMapBinder.addBinding(SideKick.Type.DEMO_DATA_ACTIVITY_CREATOR)
+        .to(DemoActivitySideKickExecutor.class)
+        .in(Scopes.SINGLETON);
     bindRetryOnExceptionInterceptor();
   }
 

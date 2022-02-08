@@ -1,22 +1,79 @@
 {
   "type": "object",
   "required": [
-    "execution",
-    "infrastructure",
-    "serviceConfig"
+    "identifier",
+    "name",
+    "type"
   ],
   "properties": {
-    "execution": {
-      "$ref": "#/definitions/ExecutionElementConfig"
+    "description": {
+      "type": "string"
     },
-    "infrastructure": {
-      "$ref": "#/definitions/PipelineInfrastructure"
+    "failureStrategies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FailureStrategyConfig"
+      }
     },
-    "serviceConfig": {
-      "$ref": "#/definitions/ServiceConfig"
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+    },
+    "tags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Deployment"
+      ]
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/NumberNGVariable"
+          },
+          {
+            "$ref": "#/definitions/SecretNGVariable"
+          },
+          {
+            "$ref": "#/definitions/StringNGVariable"
+          }
+        ]
+      }
+    },
+    "when": {
+      "$ref": "#/definitions/StageWhenCondition"
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "Deployment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "spec": {
+            "$ref": "#/definitions/DeploymentStageConfig"
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "AbortFailureActionConfig": {
       "allOf": [
@@ -559,6 +616,22 @@
         }
       ]
     },
+    "CustomPolicyStepSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/PolicySpec"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "payload": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "DeleteManifestPathSpec": {
       "allOf": [
         {
@@ -733,6 +806,83 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "DeploymentStageNode": {
+      "type": "object",
+      "required": [
+        "identifier",
+        "name",
+        "type"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "failureStrategies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FailureStrategyConfig"
+          }
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][0-9a-zA-Z_$]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][-0-9a-zA-Z_\\s]{0,63}$"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Deployment"
+          ]
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/NumberNGVariable"
+              },
+              {
+                "$ref": "#/definitions/SecretNGVariable"
+              },
+              {
+                "$ref": "#/definitions/StringNGVariable"
+              }
+            ]
+          }
+        },
+        "when": {
+          "$ref": "#/definitions/StageWhenCondition"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Deployment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/DeploymentStageConfig"
+              }
+            }
+          }
+        }
+      ]
     },
     "Distribution": {
       "type": "object",
@@ -3338,6 +3488,57 @@
         }
       ]
     },
+    "PolicySpec": {
+      "type": "object",
+      "discriminator": "type",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "PolicyStepInfo": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/StepSpecType"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "string"
+            },
+            "policySets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Custom"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "policySpec": {
+                "$ref": "#/definitions/CustomPolicyStepSpec"
+              }
+            }
+          }
+        }
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "PrimaryArtifact": {
       "type": "object",
       "required": [
@@ -4411,6 +4612,26 @@
       ],
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
+    "StageWhenCondition": {
+      "type": "object",
+      "required": [
+        "pipelineStatus"
+      ],
+      "properties": {
+        "condition": {
+          "type": "string"
+        },
+        "pipelineStatus": {
+          "type": "string",
+          "enum": [
+            "Success",
+            "Failure",
+            "All"
+          ]
+        }
+      },
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "StepElementConfig": {
       "type": "object",
       "required": [
@@ -4733,6 +4954,22 @@
             "properties": {
               "spec": {
                 "$ref": "#/definitions/K8sScaleStepInfo"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Policy"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "spec": {
+                "$ref": "#/definitions/PolicyStepInfo"
               }
             }
           }

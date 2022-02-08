@@ -143,7 +143,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     if (monitoredServiceDTO.getSources() != null && isNotEmpty(monitoredServiceDTO.getSources().getHealthSources())) {
       healthSourceService.create(accountId, monitoredServiceDTO.getOrgIdentifier(),
           monitoredServiceDTO.getProjectIdentifier(), monitoredServiceDTO.getEnvironmentRef(),
-          monitoredServiceDTO.getServiceRef(), monitoredServiceDTO.getIdentifier(),
+          monitoredServiceDTO.getServiceRef(), monitoredServiceDTO.getIdentifier(), monitoredServiceDTO.getIdentifier(),
           monitoredServiceDTO.getSources().getHealthSources(), getMonitoredServiceEnableStatus());
     }
     if (isNotEmpty(monitoredServiceDTO.getDependencies())) {
@@ -296,11 +296,12 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
     });
     healthSourceService.create(monitoredService.getAccountId(), monitoredServiceDTO.getOrgIdentifier(),
         monitoredServiceDTO.getProjectIdentifier(), monitoredService.getEnvironmentIdentifier(),
-        monitoredService.getServiceIdentifier(), monitoredServiceDTO.getIdentifier(), toBeCreatedHealthSources,
-        monitoredService.isEnabled());
+        monitoredService.getServiceIdentifier(), monitoredService.getIdentifier(), monitoredServiceDTO.getIdentifier(),
+        toBeCreatedHealthSources, monitoredService.isEnabled());
     healthSourceService.update(monitoredService.getAccountId(), monitoredServiceDTO.getOrgIdentifier(),
         monitoredServiceDTO.getProjectIdentifier(), monitoredService.getEnvironmentIdentifier(),
-        monitoredService.getServiceIdentifier(), monitoredServiceDTO.getIdentifier(), toBeUpdatedHealthSources);
+        monitoredService.getServiceIdentifier(), monitoredService.getIdentifier(), monitoredServiceDTO.getIdentifier(),
+        toBeUpdatedHealthSources);
   }
 
   @Override
@@ -315,6 +316,9 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                                                      .serviceIdentifier(monitoredService.getServiceIdentifier())
                                                      .environmentIdentifier(monitoredService.getEnvironmentIdentifier())
                                                      .build();
+    monitoredServiceHandlers.forEach(baseMonitoredServiceHandler
+        -> baseMonitoredServiceHandler.beforeDelete(environmentParams,
+            createMonitoredServiceDTOFromEntity(monitoredService, environmentParams).getMonitoredServiceDTO()));
     healthSourceService.delete(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
         projectParams.getProjectIdentifier(), monitoredService.getIdentifier(),
         monitoredService.getHealthSourceIdentifiers());
@@ -479,8 +483,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
   public List<MonitoredServiceWithHealthSources> getAllWithTimeSeriesHealthSources(ProjectParams projectParams) {
     List<MonitoredService> monitoredServiceEntities = getMonitoredServices(projectParams);
     if (isEmpty(monitoredServiceEntities)) {
-      throw new InvalidRequestException(String.format(
-          "There are no Monitored Services for the given project: %s", projectParams.getProjectIdentifier()));
+      return Collections.emptyList();
     }
     Map<String, Set<HealthSource>> healthSourceMap = healthSourceService.getHealthSource(monitoredServiceEntities);
     return monitoredServiceEntities.stream()
@@ -511,8 +514,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
       return monitoredServiceResponse.getMonitoredServiceDTO();
     }
   }
-
-  private MonitoredService getMonitoredService(ProjectParams projectParams, String identifier) {
+  @Override
+  public MonitoredService getMonitoredService(ProjectParams projectParams, String identifier) {
     return hPersistence.createQuery(MonitoredService.class)
         .filter(MonitoredServiceKeys.accountId, projectParams.getAccountIdentifier())
         .filter(MonitoredServiceKeys.orgIdentifier, projectParams.getOrgIdentifier())
@@ -915,6 +918,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         .identifier(monitoredService.getIdentifier())
         .serviceRef(monitoredService.getServiceIdentifier())
         .environmentRef(monitoredService.getEnvironmentIdentifier())
+        .environmentRefList(monitoredService.getEnvironmentIdentifierList())
         .healthMonitoringEnabled(monitoredService.isEnabled())
         .tags(TagMapper.convertToMap(monitoredService.getTags()))
         .type(monitoredService.getType());
@@ -1070,7 +1074,8 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         logDashboardService
             .getAllLogsData(serviceEnvironmentParams, timeRangeParams, liveMonitoringLogAnalysisFilter, pageParams)
             .getTotalItems();
-    TimeSeriesAnalysisFilter timeSeriesAnalysisFilter = TimeSeriesAnalysisFilter.builder().anomalous(true).build();
+    TimeSeriesAnalysisFilter timeSeriesAnalysisFilter =
+        TimeSeriesAnalysisFilter.builder().anomalousMetricsOnly(true).build();
     long timeSeriesAnomalousCount =
         timeSeriesDashboardService
             .getTimeSeriesMetricData(serviceEnvironmentParams, timeRangeParams, timeSeriesAnalysisFilter, pageParams)
@@ -1103,7 +1108,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
         healthSourceService.get(projectParams.getAccountIdentifier(), projectParams.getOrgIdentifier(),
             projectParams.getProjectIdentifier(), monitoredServiceIdentifier, Arrays.asList(healthSourceIdentifier));
     return healthSources.stream()
-        .map(healthSource -> healthSource.getSpec())
+        .map(HealthSource::getSpec)
         .filter(spec -> spec instanceof MetricHealthSourceSpec)
         .map(spec -> (MetricHealthSourceSpec) spec)
         .filter(spec -> isNotEmpty(spec.getMetricDefinitions()))

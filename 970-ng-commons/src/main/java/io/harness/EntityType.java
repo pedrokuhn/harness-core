@@ -72,6 +72,8 @@ public enum EntityType {
       EntityYamlRootNames.OVERLAY_INPUT_SET),
   @JsonProperty(EntityTypeConstants.CV_CONFIG)
   CV_CONFIG(ModuleType.CV, EntityTypeConstants.CV_CONFIG, IdentifierRef.class, EntityYamlRootNames.CV_CONFIG),
+  @JsonProperty(EntityTypeConstants.Verify)
+  VERIFY_STEP(ModuleType.CV, EntityTypeConstants.Verify, IdentifierRef.class, EntityYamlRootNames.VERIFY),
   @JsonProperty(EntityTypeConstants.DELEGATES)
   DELEGATES(ModuleType.CORE, EntityTypeConstants.DELEGATES, IdentifierRef.class, EntityYamlRootNames.DELEGATE),
   @JsonProperty(EntityTypeConstants.DELEGATE_CONFIGURATIONS)
@@ -118,7 +120,10 @@ public enum EntityType {
       ModuleType.CF, EntityTypeConstants.FEATURE_FLAGS, IdentifierRef.class, EntityYamlRootNames.FEATURE_FLAGS),
   @JsonProperty(EntityTypeConstants.SERVICENOW_APPROVAL)
   SERVICENOW_APPROVAL_STEP(ModuleType.CD, EntityTypeConstants.SERVICENOW_APPROVAL, IdentifierRef.class,
-      EntityYamlRootNames.SERVICENOW_APPROVAL);
+      EntityYamlRootNames.SERVICENOW_APPROVAL),
+  @JsonProperty(EntityTypeConstants.OPAPOLICIES)
+  OPAPOLICIES(ModuleType.CORE, EntityTypeConstants.OPAPOLICIES, IdentifierRef.class, EntityYamlRootNames.OPAPOLICY),
+  POLICY_STEP(ModuleType.PMS, EntityTypeConstants.POLICY_STEP, IdentifierRef.class, EntityYamlRootNames.POLICY_STEP);
 
   private final ModuleType moduleType;
   String yamlName;
