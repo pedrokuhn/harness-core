@@ -12,9 +12,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
+import io.harness.encryption.Scope;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ngmigration.beans.BaseEntityInput;
+import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.NgInputEntityStatus;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.ngmigration.connector.ConnectorFactory;
@@ -113,5 +117,18 @@ public class ConnectorMigrationService implements NgMigration {
             .projectIdentifier(inputDTO.getProjectIdentifier())
             .build());
     return files;
+  }
+
+  @Override
+  public BaseEntityInput generateInput(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    SettingAttribute settingAttribute = (SettingAttribute) entities.get(entityId).getEntity();
+    return BaseEntityInput.builder()
+        .migrationStatus(NgInputEntityStatus.NOT_MIGRATED)
+        .identifier(BaseInputDefinition.buildIdentifier(MigratorUtility.generateIdentifier(settingAttribute.getName())))
+        .name(BaseInputDefinition.buildName(settingAttribute.getName()))
+        .scope(BaseInputDefinition.buildScope(Scope.PROJECT.name()))
+        .spec(null)
+        .build();
   }
 }

@@ -15,8 +15,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.infra.InfrastructureDef;
 import io.harness.cdng.infra.yaml.InfrastructureType;
 import io.harness.cdng.infra.yaml.K8SDirectInfrastructure;
+import io.harness.ngmigration.beans.BaseEntityInput;
+import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.NgInputEntityStatus;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.pms.yaml.ParameterField;
@@ -80,6 +83,18 @@ public class InfraMigrationService implements NgMigration {
   public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
     return new ArrayList<>();
+  }
+
+  @Override
+  public BaseEntityInput generateInput(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    InfrastructureDefinition infra = (InfrastructureDefinition) entities.get(entityId).getEntity();
+    return BaseEntityInput.builder()
+        .migrationStatus(NgInputEntityStatus.NA)
+        .identifier(BaseInputDefinition.buildIdentifier(MigratorUtility.generateIdentifier(infra.getName())))
+        .name(BaseInputDefinition.buildName(infra.getName()))
+        .spec(null)
+        .build();
   }
 
   public InfrastructureDef getInfraDef(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,

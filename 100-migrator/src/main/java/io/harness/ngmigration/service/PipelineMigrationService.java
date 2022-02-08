@@ -11,8 +11,11 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.ngmigration.beans.BaseEntityInput;
+import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.NgInputEntityStatus;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.plancreator.pipeline.PipelineConfig;
@@ -151,5 +154,17 @@ public class PipelineMigrationService implements NgMigration {
                      .build());
 
     return allFiles;
+  }
+
+  @Override
+  public BaseEntityInput generateInput(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    Pipeline pipeline = (Pipeline) entities.get(entityId).getEntity();
+    return BaseEntityInput.builder()
+        .migrationStatus(NgInputEntityStatus.NOT_MIGRATED)
+        .identifier(BaseInputDefinition.buildIdentifier(MigratorUtility.generateIdentifier(pipeline.getName())))
+        .name(BaseInputDefinition.buildName(pipeline.getName()))
+        .spec(null)
+        .build();
   }
 }

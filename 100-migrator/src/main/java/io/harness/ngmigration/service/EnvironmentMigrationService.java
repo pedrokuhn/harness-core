@@ -16,8 +16,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.environment.yaml.EnvironmentYaml;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.ng.core.environment.beans.EnvironmentType;
+import io.harness.ngmigration.beans.BaseEntityInput;
+import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.NgInputEntityStatus;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 
@@ -91,6 +94,18 @@ public class EnvironmentMigrationService implements NgMigration {
   public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
     return new ArrayList<>();
+  }
+
+  @Override
+  public BaseEntityInput generateInput(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    Environment environment = (Environment) entities.get(entityId).getEntity();
+    return BaseEntityInput.builder()
+        .migrationStatus(NgInputEntityStatus.NA)
+        .identifier(BaseInputDefinition.buildIdentifier(MigratorUtility.generateIdentifier(environment.getName())))
+        .name(BaseInputDefinition.buildName(environment.getName()))
+        .spec(null)
+        .build();
   }
 
   public EnvironmentYaml getEnvironmentYaml(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,

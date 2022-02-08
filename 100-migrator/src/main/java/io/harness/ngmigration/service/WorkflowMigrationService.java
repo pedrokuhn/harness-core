@@ -23,8 +23,11 @@ import io.harness.cdng.pipeline.PipelineInfrastructure;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.executions.steps.StepSpecTypeConstants;
+import io.harness.ngmigration.beans.BaseEntityInput;
+import io.harness.ngmigration.beans.BaseInputDefinition;
 import io.harness.ngmigration.beans.MigrationInputDTO;
 import io.harness.ngmigration.beans.NgEntityDetail;
+import io.harness.ngmigration.beans.NgInputEntityStatus;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
 import io.harness.plancreator.execution.ExecutionElementConfig;
@@ -205,6 +208,18 @@ public class WorkflowMigrationService implements NgMigration {
   public List<NGYamlFile> getYamls(MigrationInputDTO inputDTO, Map<CgEntityId, CgEntityNode> entities,
       Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId, Map<CgEntityId, NgEntityDetail> migratedEntities) {
     return new ArrayList<>();
+  }
+
+  @Override
+  public BaseEntityInput generateInput(
+      Map<CgEntityId, CgEntityNode> entities, Map<CgEntityId, Set<CgEntityId>> graph, CgEntityId entityId) {
+    Workflow workflow = (Workflow) entities.get(entityId).getEntity();
+    return BaseEntityInput.builder()
+        .migrationStatus(NgInputEntityStatus.NA)
+        .identifier(BaseInputDefinition.buildIdentifier(MigratorUtility.generateIdentifier(workflow.getName())))
+        .name(BaseInputDefinition.buildName(workflow.getName()))
+        .spec(null)
+        .build();
   }
 
   private StepElementConfig getStepElementConfig(StepYaml step) {

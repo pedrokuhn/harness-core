@@ -16,7 +16,9 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.network.Http;
 import io.harness.ng.core.utils.NGYamlUtils;
+import io.harness.ngmigration.beans.BaseEntityInput;
 import io.harness.ngmigration.beans.MigrationInputDTO;
+import io.harness.ngmigration.beans.MigrationInputResult;
 import io.harness.ngmigration.beans.NgEntityDetail;
 import io.harness.ngmigration.client.NGClient;
 import io.harness.ngmigration.client.PmsClient;
@@ -45,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -112,6 +115,17 @@ public class DiscoveryService {
       log.warn("Unable to write visualization to file");
     }
     return DiscoveryResult.builder().entities(entities).links(graph).root(node.getEntityNode().getEntityId()).build();
+  }
+
+  public MigrationInputResult migrationInput(DiscoveryResult result) {
+    Collection<CgEntityNode> cgEntityNodes = result.getEntities().values();
+    Map<CgEntityId, BaseEntityInput> inputMap = new HashMap<>();
+    for (CgEntityNode node : cgEntityNodes) {
+      NgMigration ngMigration = migrationFactory.getMethod(node.getType());
+      inputMap.put(
+          node.getEntityId(), ngMigration.generateInput(result.getEntities(), result.getLinks(), node.getEntityId()));
+    }
+    return MigrationInputResult.builder().inputs(inputMap).build();
   }
 
   public List<NGYamlFile> migrateEntity(String auth, MigrationInputDTO inputDTO, DiscoveryResult discoveryResult) {
