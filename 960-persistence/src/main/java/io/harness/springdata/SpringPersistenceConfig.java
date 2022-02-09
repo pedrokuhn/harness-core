@@ -89,7 +89,7 @@ public class SpringPersistenceConfig extends AbstractMongoConfiguration {
     MappingMongoConverter mappingMongoConverter = mappingMongoConverter();
     mappingMongoConverter.setMapKeyDotReplacement(DOT_REPLACEMENT);
     HMongoTemplate mongoTemplate = new HMongoTemplate(mongoDbFactory(), mappingMongoConverter, config.getTraceMode());
-    mongoTemplate.setReadPreference(ReadPreference.secondaryPreferred());
+    mongoTemplate.setReadPreference(ReadPreference.secondary());
     return mongoTemplate;
   }
 
