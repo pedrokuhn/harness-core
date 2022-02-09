@@ -448,7 +448,6 @@ public class AppServiceTest extends WingsBaseTest {
     verify(updateOperations).set("description", "Description");
     verify(updateOperations)
             .set("keywords", new HashSet<>(asList("App_Name".toLowerCase(), "Description".toLowerCase())));
-    verify(updateOperations).set("isManualTriggerAuthorized", true);
     verify(updateOperations).set("areWebHookSecretsMandated", true);
     verify(wingsPersistence).update(query, updateOperations);
     verify(wingsPersistence, times(2)).get(Application.class, APP_ID);
@@ -470,7 +469,6 @@ public class AppServiceTest extends WingsBaseTest {
     verify(updateOperations).set("description", "Description");
     verify(updateOperations)
             .set("keywords", new HashSet<>(asList("App_Name".toLowerCase(), "Description".toLowerCase())));
-    verify(updateOperations, never()).set("isManualTriggerAuthorized", true);
     verify(updateOperations, never()).set("areWebHookSecretsMandated", true);
     verify(wingsPersistence).update(query, updateOperations);
     verify(wingsPersistence, times(2)).get(Application.class, APP_ID);
