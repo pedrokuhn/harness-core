@@ -745,6 +745,7 @@ public class SettingsServiceImpl implements SettingsService {
   public List<SettingAttribute> getSettingAttributeByReferencedConnector(
       String accountId, String settingAttributeUuid) {
     return wingsPersistence.createQuery(SettingAttribute.class)
+        .disableValidation()
         .filter(SettingAttributeKeys.accountId, accountId)
         .filter(SettingAttributeKeys.referencedConnector, settingAttributeUuid)
         .asList();

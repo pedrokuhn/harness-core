@@ -77,9 +77,6 @@ public class AppManifestCloudProviderPTaskManager implements CloudProviderObserv
             settingAttribute.getAccountId(), settingAttribute.getUuid());
 
         applicationManifests.forEach(applicationManifest -> {
-          if (connectorValueChanged(prevSettingAttribute, currSettingAttribute)) {
-            helmChartService.deleteByAppManifest(applicationManifest.getAppId(), applicationManifest.getUuid());
-          }
           if (applicationManifest.getPerpetualTaskId() != null) {
             appManifestPTaskHelper.resetPerpetualTask(applicationManifest);
           }
@@ -90,36 +87,15 @@ public class AppManifestCloudProviderPTaskManager implements CloudProviderObserv
 
   private boolean credentialsChanged(SettingAttribute prevSettingAttribute, SettingAttribute currSettingAttribute) {
     if (currSettingAttribute.getValue() instanceof AwsConfig) {
-      AwsConfig currHttpHelmRepoConfig = (AwsConfig) currSettingAttribute.getValue();
-      AwsConfig prevHttpHelmRepoConfig = (AwsConfig) prevSettingAttribute.getValue();
-      return !Arrays.equals(prevHttpHelmRepoConfig.getSecretKey(), currHttpHelmRepoConfig.getSecretKey())
-          || !Arrays.equals(prevHttpHelmRepoConfig.getAccessKey(), currHttpHelmRepoConfig.getAccessKey());
+      AwsConfig currAwsConfig = (AwsConfig) currSettingAttribute.getValue();
+      AwsConfig prevAwsConfig = (AwsConfig) prevSettingAttribute.getValue();
+      return !StringUtils.equals(prevAwsConfig.getEncryptedSecretKey(), currAwsConfig.getEncryptedSecretKey())
+          || !Arrays.equals(prevAwsConfig.getAccessKey(), currAwsConfig.getAccessKey());
     } else if (currSettingAttribute.getValue() instanceof GcpConfig) {
-      GcpConfig currHttpHelmRepoConfig = (GcpConfig) currSettingAttribute.getValue();
-      GcpConfig prevHttpHelmRepoConfig = (GcpConfig) prevSettingAttribute.getValue();
-      return !Arrays.equals(prevHttpHelmRepoConfig.getServiceAccountKeyFileContent(),
-          currHttpHelmRepoConfig.getServiceAccountKeyFileContent());
-    }
-    return false;
-  }
-
-  private boolean connectorValueChanged(SettingAttribute prevSettingAttribute, SettingAttribute currSettingAttribute) {
-    if (currSettingAttribute.getValue() instanceof AmazonS3HelmRepoConfig) {
-      AmazonS3HelmRepoConfig currAmazonS3HelmRepoConfig = (AmazonS3HelmRepoConfig) currSettingAttribute.getValue();
-      AmazonS3HelmRepoConfig prevAmazonS3HelmRepoConfig = (AmazonS3HelmRepoConfig) prevSettingAttribute.getValue();
-      return !StringUtils.equals(
-                 prevAmazonS3HelmRepoConfig.getConnectorId(), currAmazonS3HelmRepoConfig.getConnectorId())
-          || !StringUtils.equals(prevAmazonS3HelmRepoConfig.getBucketName(), currAmazonS3HelmRepoConfig.getBucketName())
-          || !StringUtils.equals(prevAmazonS3HelmRepoConfig.getRegion(), currAmazonS3HelmRepoConfig.getRegion());
-    } else if (currSettingAttribute.getValue() instanceof GCSHelmRepoConfig) {
-      GCSHelmRepoConfig currGcsHelmRepoConfig = (GCSHelmRepoConfig) currSettingAttribute.getValue();
-      GCSHelmRepoConfig prevGcsHelmRepoConfig = (GCSHelmRepoConfig) prevSettingAttribute.getValue();
-      return !StringUtils.equals(prevGcsHelmRepoConfig.getConnectorId(), currGcsHelmRepoConfig.getConnectorId())
-          || !StringUtils.equals(prevGcsHelmRepoConfig.getBucketName(), currGcsHelmRepoConfig.getBucketName());
-    } else if (currSettingAttribute.getValue() instanceof HttpHelmRepoConfig) {
-      HttpHelmRepoConfig currHttpHelmRepoConfig = (HttpHelmRepoConfig) currSettingAttribute.getValue();
-      HttpHelmRepoConfig prevHttpHelmRepoConfig = (HttpHelmRepoConfig) prevSettingAttribute.getValue();
-      return !StringUtils.equals(prevHttpHelmRepoConfig.getChartRepoUrl(), currHttpHelmRepoConfig.getChartRepoUrl());
+      GcpConfig currGcpConfig = (GcpConfig) currSettingAttribute.getValue();
+      GcpConfig prevGcpConfig = (GcpConfig) prevSettingAttribute.getValue();
+      return !Arrays.equals(
+          prevGcpConfig.getServiceAccountKeyFileContent(), currGcpConfig.getServiceAccountKeyFileContent());
     }
     return false;
   }
