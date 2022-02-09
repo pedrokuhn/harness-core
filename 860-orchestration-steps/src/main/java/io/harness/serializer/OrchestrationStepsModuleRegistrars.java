@@ -35,6 +35,7 @@ import io.harness.steps.jira.create.JiraCreateStepNode;
 import io.harness.steps.jira.update.JiraUpdateStepNode;
 import io.harness.steps.shellscript.ShellScriptStepNode;
 import io.harness.steps.template.TemplateStepNode;
+import io.harness.yaml.schema.beans.SchemaNamespaceConstants;
 import io.harness.yaml.schema.beans.YamlGroup;
 import io.harness.yaml.schema.beans.YamlSchemaMetadata;
 import io.harness.yaml.schema.beans.YamlSchemaRootClass;
@@ -110,6 +111,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(ApprovalStageNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.APPROVAL)
                                            .modulesSupported(ImmutableList.of(ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STAGE.name()).build())
                                            .build())
@@ -121,6 +123,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(FeatureFlagStageNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CF)
                                            .modulesSupported(ImmutableList.of(ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STAGE.name()).build())
                                            .build())
@@ -132,6 +135,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(HttpStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.PMS)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -143,6 +147,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(ShellScriptStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.PMS)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -154,6 +159,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(JiraCreateStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.APPROVAL)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -165,6 +171,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(JiraUpdateStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.APPROVAL)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -176,6 +183,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(TemplateStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.PMS)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS, ModuleType.CE,
                                                ModuleType.CF, ModuleType.CI))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
@@ -188,6 +196,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(ServiceNowApprovalStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.PMS)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -199,6 +208,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(JiraApprovalStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.APPROVAL)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -210,6 +220,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(HarnessApprovalStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.APPROVAL)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
@@ -221,6 +232,7 @@ public class OrchestrationStepsModuleRegistrars {
                    .availableAtAccountLevel(false)
                    .clazz(BarrierStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.PMS)
                                            .modulesSupported(Arrays.asList(ModuleType.CD, ModuleType.PMS))
                                            .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
                                            .build())
