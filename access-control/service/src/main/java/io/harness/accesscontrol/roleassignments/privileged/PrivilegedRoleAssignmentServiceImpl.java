@@ -25,7 +25,6 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -43,8 +42,7 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
   private final String PRIVILEGED_ROLES_CONFIG_PATH = "io/harness/accesscontrol/roles/privileged-roles.yml";
 
   @Inject
-  public PrivilegedRoleAssignmentServiceImpl(
-      PrivilegedRoleAssignmentDao dao, SupportService supportService) {
+  public PrivilegedRoleAssignmentServiceImpl(PrivilegedRoleAssignmentDao dao, SupportService supportService) {
     this.dao = dao;
     this.supportService = supportService;
     this.privilegedRoles = getPrivilegedRoles();
@@ -65,52 +63,47 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
   public PrivilegedAccessResult checkAccess(PrivilegedAccessCheck privilegedAccessCheck) {
     List<PermissionCheck> permissionChecks = privilegedAccessCheck.getPermissionChecks();
     SupportPreference supportPreference =
-            supportService.fetchSupportPreference(privilegedAccessCheck.getAccountIdentifier());
+        supportService.fetchSupportPreference(privilegedAccessCheck.getAccountIdentifier());
 
-    if ( supportPreference.isSupportEnabled() ) {
+    if (supportPreference.isSupportEnabled()) {
       Set<String> allAllowedPermissions = getAllAllowedPermissions(privilegedAccessCheck.getPrincipal());
 
-
       return PrivilegedAccessResult.builder()
-              .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
-              .principal(privilegedAccessCheck.getPrincipal())
-              .permissionCheckResults(
-                      permissionChecks.stream()
-                              .map(permissionCheck -> checkAccess(permissionCheck, allAllowedPermissions))
-                              .collect(Collectors.toList())
-              )
-              .build();
+          .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
+          .principal(privilegedAccessCheck.getPrincipal())
+          .permissionCheckResults(permissionChecks.stream()
+                                      .map(permissionCheck -> checkAccess(permissionCheck, allAllowedPermissions))
+                                      .collect(Collectors.toList()))
+          .build();
     }
 
     return PrivilegedAccessResult.builder()
-            .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
-            .principal(privilegedAccessCheck.getPrincipal())
-            .permissionCheckResults(
-                    permissionChecks.stream()
-                            .map(permissionCheck -> getPermissionCheckResult(permissionCheck, false))
-                            .collect(Collectors.toList())
-            )
-            .build();
+        .accountIdentifier(privilegedAccessCheck.getAccountIdentifier())
+        .principal(privilegedAccessCheck.getPrincipal())
+        .permissionCheckResults(permissionChecks.stream()
+                                    .map(permissionCheck -> getPermissionCheckResult(permissionCheck, false))
+                                    .collect(Collectors.toList()))
+        .build();
   }
 
   private static PermissionCheckResult getPermissionCheckResult(PermissionCheck permissionCheck, boolean permitted) {
     return PermissionCheckResult.builder()
-            .resourceScope(permissionCheck.getResourceScope())
-            .resourceType(permissionCheck.getResourceType())
-            .resourceIdentifier(permissionCheck.getResourceIdentifier())
-            .permission(permissionCheck.getPermission())
-            .permitted(permitted)
-            .build() ;
+        .resourceScope(permissionCheck.getResourceScope())
+        .resourceType(permissionCheck.getResourceType())
+        .resourceIdentifier(permissionCheck.getResourceIdentifier())
+        .permission(permissionCheck.getPermission())
+        .permitted(permitted)
+        .build();
   }
 
-  private PermissionCheckResult checkAccess( PermissionCheck permissionCheck, Set<String> allAllowedPermissions ) {
+  private PermissionCheckResult checkAccess(PermissionCheck permissionCheck, Set<String> allAllowedPermissions) {
     return PermissionCheckResult.builder()
-            .resourceScope(permissionCheck.getResourceScope())
-            .resourceType(permissionCheck.getResourceType())
-            .resourceIdentifier(permissionCheck.getResourceIdentifier())
-            .permission(permissionCheck.getPermission())
-            .permitted(allAllowedPermissions.contains(permissionCheck.getPermission()))
-            .build();
+        .resourceScope(permissionCheck.getResourceScope())
+        .resourceType(permissionCheck.getResourceType())
+        .resourceIdentifier(permissionCheck.getResourceIdentifier())
+        .permission(permissionCheck.getPermission())
+        .permitted(allAllowedPermissions.contains(permissionCheck.getPermission()))
+        .build();
   }
 
   private Set<String> getAllAllowedPermissions(Principal principal) {
@@ -126,8 +119,7 @@ public class PrivilegedRoleAssignmentServiceImpl implements PrivilegedRoleAssign
 
   @Override
   public void syncRoleAssignments(Set<Principal> updatedPrincipals, String roleIdentifier) {
-    List<PrivilegedRoleAssignment> privilegedRoleAssignments =
-        dao.getByRole(roleIdentifier);
+    List<PrivilegedRoleAssignment> privilegedRoleAssignments = dao.getByRole(roleIdentifier);
     Set<Principal> savedPrincipals = privilegedRoleAssignments.stream()
                                          .map(r
                                              -> Principal.builder()

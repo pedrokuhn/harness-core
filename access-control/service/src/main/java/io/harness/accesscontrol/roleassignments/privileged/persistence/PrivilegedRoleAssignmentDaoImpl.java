@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
-
 import org.springframework.data.mongodb.core.query.Criteria;
 
 @OwnedBy(HarnessTeam.PL)
@@ -42,8 +41,7 @@ public class PrivilegedRoleAssignmentDaoImpl implements PrivilegedRoleAssignment
   }
 
   @Override
-  public List<PrivilegedRoleAssignment> getByPrincipal(
-      Principal principal) {
+  public List<PrivilegedRoleAssignment> getByPrincipal(Principal principal) {
     Criteria userIdentifierCriteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.principalIdentifier)
                                           .is(principal.getPrincipalIdentifier())
                                           .and(PrivilegedRoleAssignmentDBOKeys.principalType)
@@ -55,17 +53,14 @@ public class PrivilegedRoleAssignmentDaoImpl implements PrivilegedRoleAssignment
 
   @Override
   public List<PrivilegedRoleAssignment> getByRole(String roleIdentifier) {
-    Criteria roleIdentifierCriteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                                      .is(roleIdentifier);
+    Criteria roleIdentifierCriteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier).is(roleIdentifier);
     List<PrivilegedRoleAssignmentDBO> assignments = repository.get(roleIdentifierCriteria);
     return assignments.stream().map(PrivilegedRoleAssignmentDBOMapper::fromDBO).collect(Collectors.toList());
   }
 
   @Override
-  public long removeByPrincipalsAndRole(
-      Set<Principal> principals, String roleIdentifier) {
-    Criteria criteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier)
-                        .is(roleIdentifier);
+  public long removeByPrincipalsAndRole(Set<Principal> principals, String roleIdentifier) {
+    Criteria criteria = Criteria.where(PrivilegedRoleAssignmentDBOKeys.roleIdentifier).is(roleIdentifier);
 
     criteria.orOperator(principals.stream()
                             .map(principal
@@ -73,8 +68,7 @@ public class PrivilegedRoleAssignmentDaoImpl implements PrivilegedRoleAssignment
                                        .is(principal.getPrincipalIdentifier())
                                        .and(PrivilegedRoleAssignmentDBOKeys.principalType)
                                        .is(principal.getPrincipalType()))
-                            .toArray(Criteria[] ::new)
-    );
+                            .toArray(Criteria[] ::new));
     return repository.remove(criteria);
   }
 }
