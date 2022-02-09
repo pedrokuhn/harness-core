@@ -11,11 +11,9 @@ import static org.springframework.data.mongodb.core.query.Update.update;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.delegate.beans.git.YamlGitConfigDTO;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
-import io.harness.gitsync.common.beans.GitBranch;
 import io.harness.gitsync.common.service.GitBranchService;
 import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.gitsync.core.beans.GitFullSyncConfig;
@@ -118,12 +116,11 @@ public class GitFullSyncConfigServiceImpl implements GitFullSyncConfigService {
 
   private void validateBranch(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String yamlGitConfigId, String branch, boolean isNewBranch) {
-    YamlGitConfigDTO yamlGitConfig =
-        yamlGitConfigService.get(projectIdentifier, orgIdentifier, accountIdentifier, yamlGitConfigId);
-    GitBranch gitBranch = gitBranchService.get(accountIdentifier, yamlGitConfig.getRepo(), branch);
-    if (gitBranch == null && !isNewBranch) {
+    boolean isBranchExists =
+        gitBranchService.isBranchExists(accountIdentifier, orgIdentifier, projectIdentifier, yamlGitConfigId, branch);
+    if (!isBranchExists && !isNewBranch) {
       throw new InvalidRequestException(String.format("Branch [%s] does not exist", branch));
-    } else if (gitBranch != null && isNewBranch) {
+    } else if (isBranchExists && isNewBranch) {
       throw new InvalidRequestException(String.format("Branch [%s] already exist", branch));
     }
   }
