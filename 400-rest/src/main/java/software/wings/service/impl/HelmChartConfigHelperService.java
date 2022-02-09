@@ -135,6 +135,9 @@ public class HelmChartConfigHelperService {
           featureFlagService.isEnabled(FeatureName.USE_HELM_REPO_FLAGS, context.getAccountId()));
     }
 
+    helmChartConfigParamsBuilder.checkIncorrectChartVersion(
+        featureFlagService.isEnabled(FeatureName.INCORRECT_HELM_CHART_VERSION, context.getAccountId()));
+
     if (isNotBlank(helmChartConfig.getChartName())) {
       String chartName = helmChartConfig.getChartName();
       // If the Feature Flag is enabled, we split the chart name smartly ( i.e only in certain cases ). Else, we always
