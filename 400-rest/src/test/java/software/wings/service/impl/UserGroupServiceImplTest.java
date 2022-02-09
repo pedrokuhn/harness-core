@@ -28,6 +28,7 @@ import static io.harness.rule.OwnerRule.SATYAM;
 import static io.harness.rule.OwnerRule.UJJAWAL;
 import static io.harness.rule.OwnerRule.VARDAN_BANSAL;
 import static io.harness.rule.OwnerRule.VIKAS;
+import static io.harness.rule.OwnerRule.VIKAS_M;
 import static io.harness.rule.OwnerRule.VOJIN;
 
 import static software.wings.beans.Account.Builder.anAccount;
@@ -106,6 +107,7 @@ import software.wings.beans.Event.Type;
 import software.wings.beans.LicenseInfo;
 import software.wings.beans.Role;
 import software.wings.beans.User;
+import software.wings.beans.UserGroupEntityReference;
 import software.wings.beans.notification.NotificationSettings;
 import software.wings.beans.notification.SlackNotificationSetting;
 import software.wings.beans.security.AccountPermissions;
@@ -1346,6 +1348,43 @@ public class UserGroupServiceImplTest extends WingsBaseTest {
     // User has TEMPLATE_MANAGEMENT Account Permission and but no Application Permissions
     doReturn(appIds).when(appService).getAppIdsByAccountId(ACCOUNT_ID);
     verifyNoApplicationTemplatePermissions(new HashSet<>(Arrays.asList(ACCOUNT_MANAGEMENT, TEMPLATE_MANAGEMENT)));
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void test_updateUserGroupParents() {
+    UserGroupEntityReference reference1 = UserGroupEntityReference.builder()
+                                              .id("pipelineId1")
+                                              .accountId(accountId)
+                                              .appId("appId1")
+                                              .entityType("PIPELINE")
+                                              .build();
+    UserGroupEntityReference reference2 = UserGroupEntityReference.builder()
+                                              .id("pipelineId2")
+                                              .accountId(accountId)
+                                              .appId("appId2")
+                                              .entityType("PIPELINE")
+                                              .build();
+    UserGroup userGroup1 = builder()
+                               .accountId(accountId)
+                               .uuid("userGroupId1")
+                               .description(description)
+                               .name(userGroupName)
+                               .parents(new HashSet<>(Arrays.asList(reference1, reference2)))
+                               .build();
+
+    persistence.save(userGroup1);
+    UserGroup userGroup2 =
+        builder().accountId(accountId).uuid("userGroupId2").description(description).name(userGroupName2).build();
+
+    persistence.save(userGroup2);
+    userGroupService.updateUserGroupParents(new HashSet<>(singletonList("userGroupId1")),
+        new HashSet<>(singletonList("userGroupId2")), accountId, "pipelineId2", "appId2");
+    UserGroup updatedUserGroup1 = persistence.get(UserGroup.class, "userGroupId1");
+    UserGroup updatedUserGroup2 = persistence.get(UserGroup.class, "userGroupId2");
+    assertThat(updatedUserGroup1.getParents().size()).isEqualTo(1);
+    assertThat(updatedUserGroup2.getParents().size()).isEqualTo(1);
   }
 
   private Set<String> getAppIds(UserGroup userGroup) {

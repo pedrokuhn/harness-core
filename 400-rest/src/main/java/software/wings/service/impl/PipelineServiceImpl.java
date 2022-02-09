@@ -283,9 +283,6 @@ public class PipelineServiceImpl implements PipelineService {
     userGroupService.updateUserGroupParents(
         previousUserGroups, currentUserGroups, accountId, updatedPipeline.getUuid(), updatedPipeline.getAppId());
 
-    //    updateUserGroupsParentField(updatedPipeline, accountId, updatedPipeline.getUuid(), updatedPipeline.getName(),
-    //    updatedPipeline.getAppId());
-
     if (isRename) {
       executorService.submit(() -> triggerService.updateByApp(pipeline.getAppId()));
     }
@@ -450,7 +447,6 @@ public class PipelineServiceImpl implements PipelineService {
       return true;
     }
     Set<String> previousUserGroups = getUserGroups(pipeline);
-    String pipelineName = pipeline.getName();
     String accountId = appService.getAccountIdByAppId(pipeline.getAppId());
     StaticLimitCheckerWithDecrement checker = (StaticLimitCheckerWithDecrement) limitCheckerFactory.getInstance(
         new Action(accountId, ActionType.CREATE_PIPELINE));
@@ -1738,13 +1734,13 @@ public class PipelineServiceImpl implements PipelineService {
 
       Set<String> currentUserGroups = getUserGroups(pipeline);
 
-      userGroupService.updateUserGroupParents(
-          new HashSet<>(), currentUserGroups, accountId, pipeline.getUuid(), pipeline.getAppId());
-
       // TODO: remove this when all the needed verification is done from validatePipeline
       new StateMachine(pipeline, workflowService.stencilMap(pipeline.getAppId()));
 
       yamlPushService.pushYamlChangeSet(accountId, null, pipeline, Type.CREATE, pipeline.isSyncFromGit(), false);
+
+      userGroupService.updateUserGroupParents(
+          new HashSet<>(), currentUserGroups, accountId, pipeline.getUuid(), pipeline.getAppId());
 
       if (!pipeline.isSample()) {
         eventPublishHelper.publishAccountEvent(

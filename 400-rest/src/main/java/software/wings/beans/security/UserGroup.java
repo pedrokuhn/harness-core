@@ -141,7 +141,7 @@ public class UserGroup extends Base implements NotificationReceiverInfo, Account
 
   private boolean isDefault;
 
-  @FdIndex private Set<UserGroupEntityReference> parents = new HashSet<>();
+  private Set<UserGroupEntityReference> parents = new HashSet<>();
 
   // TODO: Should use Builder at the class level itself.
   @Builder
