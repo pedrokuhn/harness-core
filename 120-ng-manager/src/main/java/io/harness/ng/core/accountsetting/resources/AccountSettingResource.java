@@ -81,22 +81,24 @@ public class AccountSettingResource {
   @GET
   @ApiOperation(value = "Gets account setting", nickname = "getAccountSetting")
   public ResponseDTO<AccountSettingResponseDTO> get(
-      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @NotNull @QueryParam(TYPE_KEY) AccountSettingType type) {
-    return ResponseDTO.newResponse(accountSettingService.get(accountId, orgIdentifier, projectIdentifier, type));
+    return ResponseDTO.newResponse(
+        accountSettingService.get(accountIdentifier, orgIdentifier, projectIdentifier, type));
   }
 
   @GET
   @Path("/list")
   @ApiOperation(value = "List account setting", nickname = "listAccountSetting")
   public ResponseDTO<List<AccountSettingsDTO>> list(
-      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
+      @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @QueryParam(TYPE_KEY) AccountSettingType type) {
-    return ResponseDTO.newResponse(accountSettingService.list(accountId, orgIdentifier, projectIdentifier, type));
+    return ResponseDTO.newResponse(
+        accountSettingService.list(accountIdentifier, orgIdentifier, projectIdentifier, type));
   }
 
   @POST
@@ -109,8 +111,8 @@ public class AccountSettingResource {
       })
   @Hidden
   public ResponseDTO<AccountSettingResponseDTO>
-  create(@RequestBody(required = true, description = "Details of the ACcountSetting to create") @Valid
-         @NotNull AccountSettingsDTO accountSettingsDTO,
+  create(@RequestBody(required = true,
+             description = "Details of the Account Setting") @Valid @NotNull AccountSettingsDTO accountSettingsDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier
 

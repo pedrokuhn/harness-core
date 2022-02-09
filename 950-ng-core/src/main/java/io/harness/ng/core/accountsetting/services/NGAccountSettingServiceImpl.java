@@ -67,9 +67,9 @@ public class NGAccountSettingServiceImpl implements NGAccountSettingService {
 
   @Override
   public List<AccountSettingsDTO> list(
-      String accountId, String orgIdentifier, String projectIdentifier, AccountSettingType type) {
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, AccountSettingType type) {
     final List<AccountSettings> accountSettingList =
-        accountSettingRepository.findAll(accountId, orgIdentifier, projectIdentifier, type);
+        accountSettingRepository.findAll(accountIdentifier, orgIdentifier, projectIdentifier, type);
     return getListResponse(accountSettingList);
   }
 
@@ -79,9 +79,9 @@ public class NGAccountSettingServiceImpl implements NGAccountSettingService {
 
   @Override
   public AccountSettingResponseDTO get(
-      String accountId, String orgIdentifier, String projectIdentifier, AccountSettingType type) {
-    final AccountSettings byScopeIdentifiersAndType =
-        accountSettingRepository.findByScopeIdentifiersAndType(accountId, orgIdentifier, projectIdentifier, type);
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, AccountSettingType type) {
+    final AccountSettings byScopeIdentifiersAndType = accountSettingRepository.findByScopeIdentifiersAndType(
+        accountIdentifier, orgIdentifier, projectIdentifier, type);
     return getResponse(byScopeIdentifiersAndType);
   }
 

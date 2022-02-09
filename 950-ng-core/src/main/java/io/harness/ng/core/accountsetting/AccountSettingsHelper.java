@@ -13,6 +13,7 @@ import io.harness.ng.core.accountsetting.dto.AccountSettingResponseDTO;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
 import io.harness.ng.core.accountsetting.dto.ConnectorSettings;
 import io.harness.ng.core.accountsetting.entities.AccountSettings;
+import io.harness.ng.core.accountsetting.entities.AccountSettings.AccountSettingsKeys;
 import io.harness.ng.core.accountsetting.services.NGAccountSettingService;
 
 import com.google.inject.Inject;
@@ -30,7 +31,6 @@ import org.springframework.data.mongodb.core.query.Query;
 public class AccountSettingsHelper {
   @Inject NGAccountSettingService ngAccountSettingService;
   @Inject MongoTemplate mongoTemplate;
-  @Inject ConnectorSettings connectorSettings;
 
   public boolean getIsBuiltInSMDisabled(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, AccountSettingType type) {
@@ -45,8 +45,7 @@ public class AccountSettingsHelper {
 
   public void setUpDefaultAccountSettings(String accountIdentifier) {
     final List<AccountSettings> accountSettings = new ArrayList<>();
-    final Criteria criteria =
-        Criteria.where(AccountSettings.AccountSettingsKeys.accountIdentifier).is(accountIdentifier);
+    final Criteria criteria = Criteria.where(AccountSettingsKeys.accountIdentifier).is(accountIdentifier);
     final List<AccountSettings> existingAccountSettings =
         mongoTemplate.find(new Query(criteria), AccountSettings.class);
     List<AccountSettingType> existingAccountSettingType = new ArrayList<>();
