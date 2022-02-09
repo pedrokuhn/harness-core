@@ -21,6 +21,7 @@ import static io.harness.rule.OwnerRule.PRABU;
 import static io.harness.rule.OwnerRule.RAMA;
 import static io.harness.rule.OwnerRule.SRINIVAS;
 import static io.harness.rule.OwnerRule.UJJAWAL;
+import static io.harness.rule.OwnerRule.VIKAS_M;
 
 import static software.wings.beans.Application.Builder.anApplication;
 import static software.wings.beans.BasicOrchestrationWorkflow.BasicOrchestrationWorkflowBuilder.aBasicOrchestrationWorkflow;
@@ -116,6 +117,7 @@ import software.wings.service.intfc.PipelineService;
 import software.wings.service.intfc.ResourceLookupService;
 import software.wings.service.intfc.ServiceResourceService;
 import software.wings.service.intfc.TriggerService;
+import software.wings.service.intfc.UserGroupService;
 import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.WorkflowService;
 import software.wings.service.intfc.yaml.YamlDirectoryService;
@@ -130,8 +132,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -170,6 +174,7 @@ public class PipelineServiceTest extends WingsBaseTest {
   @Mock private ServiceResourceService serviceResourceService;
   @Mock private EnvironmentService environmentService;
   @Mock private LimitCheckerFactory limitCheckerFactory;
+  @Mock private UserGroupService userGroupService;
 
   @Mock Query<Pipeline> pquery;
   @Mock private FieldEnd end;
@@ -296,7 +301,9 @@ public class PipelineServiceTest extends WingsBaseTest {
     when(workflowService.stencilMap(any())).thenReturn(ImmutableMap.of("ENV_STATE", StateType.ENV_STATE));
 
     pipelineService.save(pipeline);
-
+    verify(userGroupService, times(1))
+        .updateUserGroupParents(
+            new HashSet<>(), new HashSet<>(), pipeline.getAccountId(), pipeline.getUuid(), pipeline.getAppId());
     verify(wingsPersistence).save(pipelineArgumentCaptor.capture());
     Pipeline argumentCaptorValue = pipelineArgumentCaptor.getValue();
     assertThat(argumentCaptorValue)
@@ -326,6 +333,9 @@ public class PipelineServiceTest extends WingsBaseTest {
         .containsExactly(failureStrategy);
 
     verify(wingsPersistence, times(2)).getWithAppId(Pipeline.class, pipeline.getAppId(), pipeline.getUuid());
+    verify(userGroupService, times(1))
+        .updateUserGroupParents(
+            new HashSet<>(), new HashSet<>(), pipeline.getAccountId(), pipeline.getUuid(), pipeline.getAppId());
     verify(wingsPersistence).createQuery(Pipeline.class);
     verify(pipelineQuery, times(2)).filter(any(), any());
     verify(wingsPersistence).createUpdateOperations(Pipeline.class);
@@ -796,8 +806,9 @@ public class PipelineServiceTest extends WingsBaseTest {
     mockPipeline();
     when(wingsPersistence.delete(Pipeline.class, APP_ID, PIPELINE_ID)).thenReturn(true);
     when(workflowExecutionService.runningExecutionsPresent(APP_ID, PIPELINE_ID)).thenReturn(false);
-
     assertThat(pipelineService.deletePipeline(APP_ID, PIPELINE_ID)).isTrue();
+    verify(userGroupService, times(1))
+        .updateUserGroupParents(new HashSet<>(), new HashSet<>(), null, PIPELINE_ID, APP_ID);
   }
 
   @Test(expected = WingsException.class)
@@ -1694,6 +1705,42 @@ public class PipelineServiceTest extends WingsBaseTest {
     DeploymentMetadata deploymentMetadata = pipelineService.fetchDeploymentMetadata(APP_ID, pipeline, null, null);
     assertThat(deploymentMetadata).isNotNull();
     assertThat(deploymentMetadata.getArtifactVariables()).isEmpty();
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void test_savePipelineCallsUpdateUserGroupMethod() {}
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void test_getUserGroups() {
+    Map<String, Object> properties1 = new HashMap<>();
+    properties1.put("userGroups", Arrays.asList("userGroup1", "userGroup2"));
+    PipelineStage stage1 = PipelineStage.builder()
+                               .pipelineStageElements(Collections.singletonList(PipelineStageElement.builder()
+                                                                                    .name("STAGE1")
+                                                                                    .type(APPROVAL.name())
+                                                                                    .properties(properties1)
+                                                                                    .disable(false)
+                                                                                    .build()))
+                               .build();
+    Map<String, Object> properties2 = new HashMap<>();
+    properties2.put("userGroups", Arrays.asList("userGroup2", "userGroup3"));
+    PipelineStage stage2 = PipelineStage.builder()
+                               .pipelineStageElements(Collections.singletonList(PipelineStageElement.builder()
+                                                                                    .name("STAGE2")
+                                                                                    .type(APPROVAL.name())
+                                                                                    .properties(properties2)
+                                                                                    .disable(false)
+                                                                                    .build()))
+                               .build();
+    Pipeline pipeline = preparePipeline(stage1, stage2);
+    Set<String> actualUserGroups = pipelineService.getUserGroups(pipeline);
+    Set<String> expectedUserGroups = new HashSet<>(Arrays.asList("userGroup1", "userGroup2", "userGroup3"));
+    assertThat(actualUserGroups.size()).isEqualTo(3);
+    assertThat(actualUserGroups).isEqualTo(expectedUserGroups);
   }
 
   private ArtifactVariable prepareArtifactVariable(String name, String serviceId) {
