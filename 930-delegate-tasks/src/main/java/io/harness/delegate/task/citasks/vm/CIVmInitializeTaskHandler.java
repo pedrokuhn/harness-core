@@ -219,6 +219,7 @@ public class CIVmInitializeTaskHandler implements CIInitializeTaskHandler {
             .pull(params.getPullPolicy())
             .user(params.getRunAsUser())
             .envs(params.getEnvVariables())
+            .detach(true)
             .kind(RUN_STEP_KIND);
     ExecuteStepRequest.ImageAuth imageAuth =
         stepExecutionHelper.getImageAuth(params.getImage(), params.getImageConnector());

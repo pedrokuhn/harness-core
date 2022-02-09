@@ -197,6 +197,7 @@ public class VmInitializeTaskUtils {
         .imageConnector(connectorDetails)
         .envVariables(envVars)
         .secrets(new ArrayList<>(secrets))
+        .logKey(logKey)
         .build();
   }
 
