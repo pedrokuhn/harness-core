@@ -9,8 +9,12 @@ package io.harness.ng.core.accountsetting.resources;
 
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.TYPE_KEY;
+import static io.harness.account.accesscontrol.AccountAccessControlPermissions.EDIT_ACCOUNT_PERMISSION;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.accesscontrol.AccountIdentifier;
+import io.harness.accesscontrol.NGAccessControlCheck;
+import io.harness.account.accesscontrol.ResourceTypes;
 import io.harness.ng.core.accountsetting.dto.AccountSettingResponseDTO;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
 import io.harness.ng.core.accountsetting.dto.AccountSettingsDTO;
@@ -25,6 +29,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -75,7 +80,7 @@ public class AccountSettingResource {
 
   @GET
   @ApiOperation(value = "Gets account setting", nickname = "getAccountSetting")
-  public ResponseDTO<AccountSettingResponseDTO> getAccountSetting(
+  public ResponseDTO<AccountSettingResponseDTO> get(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
@@ -86,7 +91,7 @@ public class AccountSettingResource {
   @GET
   @Path("/list")
   @ApiOperation(value = "List account setting", nickname = "listAccountSetting")
-  public ResponseDTO<List<AccountSettingsDTO>> listSettings(
+  public ResponseDTO<List<AccountSettingsDTO>> list(
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
@@ -102,6 +107,7 @@ public class AccountSettingResource {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns created account setting")
       })
+  @Hidden
   public ResponseDTO<AccountSettingResponseDTO>
   create(@RequestBody(required = true, description = "Details of the ACcountSetting to create") @Valid
          @NotNull AccountSettingsDTO accountSettingsDTO,
@@ -114,17 +120,18 @@ public class AccountSettingResource {
 
   @PUT
   @ApiOperation(value = "Update a account setting", nickname = "updateAccountSetting")
-  @Operation(operationId = "updateAccountSetting", summary = "Creates a account setting",
+  @Operation(operationId = "updateAccountSetting", summary = "Updates account settings",
       responses =
       {
         @io.swagger.v3.oas.annotations.responses.
         ApiResponse(responseCode = "default", description = "Returns created account setting")
       })
+  @NGAccessControlCheck(resourceType = ResourceTypes.ACCOUNT, permission = EDIT_ACCOUNT_PERMISSION)
   public ResponseDTO<AccountSettingResponseDTO>
   update(@RequestBody(required = true, description = "Details of the AccountSetting to create") @Valid
          @NotNull AccountSettingsDTO accountSettingsDTO,
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountIdentifier) {
+          NGCommonEntityConstants.ACCOUNT_KEY) @NotNull @AccountIdentifier String accountIdentifier) {
     return ResponseDTO.newResponse(accountSettingService.update(accountSettingsDTO, accountIdentifier));
   }
 }

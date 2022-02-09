@@ -84,7 +84,7 @@ public class AccountSettingResourceTest extends CategoryTest {
     listResponse.add(accountSettingsDTO);
     when(accountSettingService.list(accountIdentifier, null, null, null)).thenReturn(listResponse);
     final ResponseDTO<List<AccountSettingsDTO>> listResponseDTO =
-        accountSettingResource.listSettings(accountIdentifier, null, null, null);
+        accountSettingResource.list(accountIdentifier, null, null, null);
     Mockito.verify(accountSettingService, times(1)).list(eq(accountIdentifier), eq(null), eq(null), eq(null));
     assertThat(listResponseDTO.getData()).isNotNull();
   }
@@ -98,7 +98,7 @@ public class AccountSettingResourceTest extends CategoryTest {
     when(accountSettingService.list(accountIdentifier, null, null, AccountSettingType.CONNECTOR))
         .thenReturn(listResponse);
     final ResponseDTO<List<AccountSettingsDTO>> listResponseDTO =
-        accountSettingResource.listSettings(accountIdentifier, null, null, AccountSettingType.CONNECTOR);
+        accountSettingResource.list(accountIdentifier, null, null, AccountSettingType.CONNECTOR);
     Mockito.verify(accountSettingService, times(1))
         .list(eq(accountIdentifier), eq(null), eq(null), eq(AccountSettingType.CONNECTOR));
     assertThat(listResponseDTO.getData()).isNotNull();
