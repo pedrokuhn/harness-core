@@ -85,7 +85,7 @@ public class SpringPersistenceConfig extends AbstractMongoConfiguration {
 
   @Bean(name = "secondary")
   public MongoTemplate mongoTemplateSecondary() throws Exception {
-    MongoConfig config = injector.getInstance(MongoConfig.class);
+    MongoConfig config = injector.getProvider(get(MongoConfig.class, named("SecondaryMongoConfig"))).get();
     MappingMongoConverter mappingMongoConverter = mappingMongoConverter();
     mappingMongoConverter.setMapKeyDotReplacement(DOT_REPLACEMENT);
     HMongoTemplate mongoTemplate = new HMongoTemplate(mongoDbFactory(), mappingMongoConverter, config.getTraceMode());

@@ -464,6 +464,13 @@ public class PipelineServiceModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @Named("SecondaryMongoConfig")
+  public MongoConfig mongoConfigSecondary(PipelineServiceConfiguration configuration) {
+    return configuration.getMongoConfigSecondary();
+  }
+
+  @Provides
+  @Singleton
   @Named("morphiaClasses")
   Map<Class, String> morphiaCustomCollectionNames() {
     return ImmutableMap.<Class, String>builder()

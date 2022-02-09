@@ -76,6 +76,7 @@ public class PipelineServiceConfiguration extends Configuration {
 
   @JsonProperty("swagger") private SwaggerBundleConfiguration swaggerBundleConfiguration;
   @JsonProperty("mongo") private MongoConfig mongoConfig;
+  @JsonProperty("mongoSecondary") private MongoConfig mongoConfigSecondary;
   @JsonProperty("commonPoolConfig") private ThreadPoolConfig commonPoolConfig;
   @JsonProperty("orchestrationVisualizationThreadPoolConfig")
   private ThreadPoolConfig orchestrationVisualizationThreadPoolConfig;
