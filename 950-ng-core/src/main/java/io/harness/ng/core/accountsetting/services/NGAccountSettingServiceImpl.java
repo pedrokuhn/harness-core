@@ -10,8 +10,6 @@ package io.harness.ng.core.accountsetting.services;
 import static java.lang.String.format;
 
 import io.harness.exception.DuplicateFieldException;
-import io.harness.exception.InvalidArgumentsException;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.accountsetting.AccountSettingMapper;
 import io.harness.ng.core.accountsetting.dto.AccountSettingResponseDTO;
 import io.harness.ng.core.accountsetting.dto.AccountSettingType;
@@ -22,6 +20,7 @@ import io.harness.repositories.accountsetting.AccountSettingRepository;
 import com.google.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -39,10 +38,11 @@ public class NGAccountSettingServiceImpl implements NGAccountSettingService {
     AccountSettings updatedAccountSetting = null;
     try {
       updatedAccountSetting = accountSettingRepository.updateAccountSetting(accountSettings, accountIdentifier);
-    } catch (InvalidArgumentsException ex) {
-      throw new InvalidRequestException(format("No settings found for account [%s] org [%s] project [%s]  type [%s]",
-          accountSettings.getAccountIdentifier(), accountSettings.getOrgIdentifier(),
-          accountSettings.getProjectIdentifier(), accountSettings.getType()));
+    } catch (Exception ex) {
+      throw new NotFoundException(
+          format("Error while saving settings for account [%s] org [%s] project [%s]  type [%s]",
+              accountSettings.getAccountIdentifier(), accountSettings.getOrgIdentifier(),
+              accountSettings.getProjectIdentifier(), accountSettings.getType()));
     }
     return getResponse(updatedAccountSetting);
   }

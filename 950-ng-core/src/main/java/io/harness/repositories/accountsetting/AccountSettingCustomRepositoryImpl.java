@@ -16,6 +16,7 @@ import io.harness.ng.core.accountsetting.entities.AccountSettings.AccountSetting
 import com.google.inject.Inject;
 import com.mongodb.client.result.UpdateResult;
 import java.util.List;
+import javax.ws.rs.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -69,7 +70,14 @@ public class AccountSettingCustomRepositoryImpl implements AccountSettingCustomR
                             .is(projectIdentifier)
                             .and(AccountSettingsKeys.type)
                             .is(type);
-    return mongoTemplate.findOne(new Query(criteria), AccountSettings.class);
+    final AccountSettings result = mongoTemplate.findOne(new Query(criteria), AccountSettings.class);
+
+    if (result == null) {
+      throw new NotFoundException(
+          String.format("AccountSettings for account [%s] in project [%s], org [%s] type [%s] not found", accountId,
+              orgIdentifier, projectIdentifier, type));
+    }
+    return result;
   }
 
   @Override
@@ -84,6 +92,14 @@ public class AccountSettingCustomRepositoryImpl implements AccountSettingCustomR
                             .is(accountSettings.getType());
 
     Update update = update(AccountSettingsKeys.config, accountSettings.getConfig());
-    return mongoTemplate.findAndModify(new Query(criteria), update, AccountSettings.class);
+
+    final AccountSettings existingRecord =
+        mongoTemplate.findAndModify(new Query(criteria), update, AccountSettings.class);
+    if (existingRecord == null) {
+      throw new NotFoundException(String.format(
+          "AccountSettings for account [%s] in project [%s], org [%s] type [%s] not found", accountIdentifier,
+          accountSettings.getOrgIdentifier(), accountSettings.getProjectIdentifier(), accountSettings.getType()));
+    }
+    return existingRecord;
   }
 }

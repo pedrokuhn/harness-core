@@ -8,9 +8,11 @@
 package io.harness.ng.core.accountsetting.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 
 import io.harness.category.element.UnitTests;
@@ -27,6 +29,7 @@ import io.harness.rule.OwnerRule;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.NotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -100,6 +103,19 @@ public class NGAccountSettingServiceImplTest extends NGCoreTestBase {
     Mockito.verify(accountSettingRepository, times(1)).updateAccountSetting(eq(accountSettings), eq(accountIdentifier));
     assertThat(updated).isNotNull();
     assertThat(updated.getAccountSettings()).isEqualTo(accountSettingsDTO);
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.MEENAKSHI)
+  @Category(UnitTests.class)
+  public void updateThrowExceptionOnNotFound() {
+    doReturn(accountSettings).when(accountSettingMapper).toAccountSetting(any(), any());
+    doThrow(new NotFoundException())
+        .when(accountSettingRepository)
+        .updateAccountSetting(accountSettings, accountIdentifier);
+    doReturn(accountSettingResponseDTO).when(accountSettingMapper).toResponseDTO(accountSettings);
+    assertThatThrownBy(() -> ngAccountSettingService.update(accountSettingsDTO, accountIdentifier))
+        .isInstanceOf(NotFoundException.class);
   }
 
   @Test
