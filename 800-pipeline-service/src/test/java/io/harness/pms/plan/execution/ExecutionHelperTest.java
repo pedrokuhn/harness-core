@@ -193,7 +193,7 @@ public class ExecutionHelperTest extends CategoryTest {
   public void testBuildTriggerInfo() {
     doReturn(triggeredBy).when(triggeredByHelper).getFromSecurityContext();
 
-    ExecutionTriggerInfo firstExecutionTriggerInfo = executionHelper.buildTriggerInfo(null);
+    ExecutionTriggerInfo firstExecutionTriggerInfo = executionHelper.buildTriggerInfoForManualFlow(null);
     assertThat(firstExecutionTriggerInfo.getIsRerun()).isEqualTo(false);
     assertThat(firstExecutionTriggerInfo.getTriggerType()).isEqualTo(MANUAL);
     assertThat(firstExecutionTriggerInfo.getTriggeredBy()).isEqualTo(triggeredBy);
@@ -205,7 +205,7 @@ public class ExecutionHelperTest extends CategoryTest {
     PlanExecution firstPlanExecution = PlanExecution.builder().metadata(firstExecutionMetadata).build();
     doReturn(firstPlanExecution).when(planExecutionService).get(originalExecutionId);
 
-    ExecutionTriggerInfo rerunExecutionTriggerInfo = executionHelper.buildTriggerInfo(originalExecutionId);
+    ExecutionTriggerInfo rerunExecutionTriggerInfo = executionHelper.buildTriggerInfoForManualFlow(originalExecutionId);
     rerunExecutionAssertions(triggeredBy, rerunExecutionTriggerInfo);
     verify(triggeredByHelper, times(2)).getFromSecurityContext();
     verify(planExecutionService, times(1)).get(originalExecutionId);
@@ -215,7 +215,7 @@ public class ExecutionHelperTest extends CategoryTest {
     PlanExecution secondPlanExecution = PlanExecution.builder().metadata(secondExecutionMetadata).build();
     doReturn(secondPlanExecution).when(planExecutionService).get("originalExecutionId2");
 
-    ExecutionTriggerInfo reRerunExecutionTriggerInfo = executionHelper.buildTriggerInfo("originalExecutionId2");
+    ExecutionTriggerInfo reRerunExecutionTriggerInfo = executionHelper.buildTriggerInfoForManualFlow("originalExecutionId2");
     rerunExecutionAssertions(triggeredBy, reRerunExecutionTriggerInfo);
     verify(triggeredByHelper, times(3)).getFromSecurityContext();
     verify(planExecutionService, times(1)).get(originalExecutionId);

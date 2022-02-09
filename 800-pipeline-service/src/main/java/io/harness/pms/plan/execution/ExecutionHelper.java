@@ -32,6 +32,8 @@ import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
 import io.harness.pms.contracts.plan.PlanCreationBlobResponse;
 import io.harness.pms.contracts.plan.RerunInfo;
 import io.harness.pms.contracts.plan.RetryExecutionInfo;
+import io.harness.pms.contracts.plan.TriggerType;
+import io.harness.pms.contracts.plan.TriggeredBy;
 import io.harness.pms.exception.PmsExceptionUtils;
 import io.harness.pms.gitsync.PmsGitSyncHelper;
 import io.harness.pms.helpers.PrincipalInfoHelper;
@@ -107,10 +109,19 @@ public class ExecutionHelper {
     return pipelineEntityOptional.get();
   }
 
-  public ExecutionTriggerInfo buildTriggerInfo(String originalExecutionId) {
+  public ExecutionTriggerInfo buildTriggerInfo(
+      TriggerFlowPlanDetails triggerFlowPlanDetails, String originalExecutionId) {
+    if (triggerFlowPlanDetails == null) {
+      return buildTriggerInfoForManualFlow(originalExecutionId);
+    } else {
+      return buildTriggerInfoForTriggerFlow(
+          triggerFlowPlanDetails.getTriggerType(), triggerFlowPlanDetails.getTriggeredBy());
+    }
+  }
+
+  public ExecutionTriggerInfo buildTriggerInfoForManualFlow(String originalExecutionId) {
     ExecutionTriggerInfo.Builder triggerInfoBuilder =
-        ExecutionTriggerInfo.newBuilder().setTriggerType(MANUAL).setTriggeredBy(
-            triggeredByHelper.getFromSecurityContext());
+        buildTriggerInfoBasicInfo(MANUAL, triggeredByHelper.getFromSecurityContext());
 
     if (originalExecutionId == null) {
       return triggerInfoBuilder.setIsRerun(false).build();
@@ -134,6 +145,14 @@ public class ExecutionHelper {
                           .setRootTriggerType(originalTriggerInfo.getTriggerType())
                           .build())
         .build();
+  }
+
+  public ExecutionTriggerInfo buildTriggerInfoForTriggerFlow(TriggerType triggerType, TriggeredBy triggeredBy) {
+    return buildTriggerInfoBasicInfo(triggerType, triggeredBy).setIsRerun(false).build();
+  }
+
+  public ExecutionTriggerInfo.Builder buildTriggerInfoBasicInfo(TriggerType triggerType, TriggeredBy triggeredBy) {
+    return ExecutionTriggerInfo.newBuilder().setTriggerType(triggerType).setTriggeredBy(triggeredBy);
   }
 
   @SneakyThrows

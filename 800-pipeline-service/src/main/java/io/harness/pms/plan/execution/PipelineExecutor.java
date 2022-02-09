@@ -113,12 +113,7 @@ public class PipelineExecutor {
       throw new InvalidRequestException(
           String.format("Stage executions are not allowed for pipeline [%s]", pipelineIdentifier));
     }
-    ExecutionTriggerInfo triggerInfo;
-    if (triggerFlowPlanDetails == null || triggerFlowPlanDetails.getTriggerInfo() == null) {
-      triggerInfo = executionHelper.buildTriggerInfo(originalExecutionId);
-    } else {
-      triggerInfo = triggerFlowPlanDetails.getTriggerInfo();
-    }
+    ExecutionTriggerInfo triggerInfo = executionHelper.buildTriggerInfo(triggerFlowPlanDetails, originalExecutionId);
 
     // RetryExecutionParameters
     RetryExecutionParameters retryExecutionParameters = buildRetryExecutionParameters(false, null, null, null);
@@ -151,7 +146,7 @@ public class PipelineExecutor {
       retryStagesIdentifier = retryExecutionHelper.fetchOnlyFailedStages(previousExecutionId, retryStagesIdentifier);
     }
 
-    ExecutionTriggerInfo triggerInfo = executionHelper.buildTriggerInfo(null);
+    ExecutionTriggerInfo triggerInfo = executionHelper.buildTriggerInfoForManualFlow(null);
     Optional<PlanExecutionMetadata> optionalPlanExecutionMetadata =
         planExecutionMetadataService.findByPlanExecutionId(previousExecutionId);
 

@@ -37,7 +37,6 @@ import io.harness.ngtriggers.beans.source.webhook.v2.git.GitAware;
 import io.harness.pms.contracts.interrupts.InterruptConfig;
 import io.harness.pms.contracts.interrupts.IssuedBy;
 import io.harness.pms.contracts.interrupts.TriggerIssuer;
-import io.harness.pms.contracts.plan.ExecutionTriggerInfo;
 import io.harness.pms.contracts.plan.TriggerType;
 import io.harness.pms.contracts.plan.TriggeredBy;
 import io.harness.pms.contracts.triggers.ParsedPayload;
@@ -72,30 +71,24 @@ public class TriggerExecutionHelper {
 
   public PlanExecution resolveRuntimeInputAndSubmitExecutionRequest(
       TriggerDetails triggerDetails, TriggerPayload triggerPayload) {
-    String executionTag = generateExecutionTagForEvent(triggerDetails, triggerPayload);
-    TriggeredBy embeddedUser =
-        generateTriggerdBy(executionTag, triggerDetails.getNgTriggerEntity(), triggerPayload, null);
-
-    TriggerType triggerType = findTriggerType(triggerPayload);
-    ExecutionTriggerInfo triggerInfo =
-        ExecutionTriggerInfo.newBuilder().setTriggerType(triggerType).setTriggeredBy(embeddedUser).build();
-    return createPlanExecution(triggerDetails, triggerPayload, null, executionTag, triggerInfo);
+    return resolveRuntimeInputAndSubmitExecutionRequest(triggerDetails, triggerPayload, null, null);
   }
 
   public PlanExecution resolveRuntimeInputAndSubmitExecutionRequest(TriggerDetails triggerDetails,
       TriggerPayload triggerPayload, TriggerWebhookEvent triggerWebhookEvent, String payload) {
     String executionTagForGitEvent = generateExecutionTagForEvent(triggerDetails, triggerPayload);
-    TriggeredBy embeddedUser = generateTriggerdBy(
-        executionTagForGitEvent, triggerDetails.getNgTriggerEntity(), triggerPayload, triggerWebhookEvent.getUuid());
+    String eventId = triggerWebhookEvent != null ? triggerWebhookEvent.getUuid() : null;
 
+    TriggeredBy embeddedUser =
+        generateTriggerdBy(executionTagForGitEvent, triggerDetails.getNgTriggerEntity(), triggerPayload, eventId);
     TriggerType triggerType = findTriggerType(triggerPayload);
-    ExecutionTriggerInfo triggerInfo =
-        ExecutionTriggerInfo.newBuilder().setTriggerType(triggerType).setTriggeredBy(embeddedUser).build();
-    return createPlanExecution(triggerDetails, triggerPayload, payload, executionTagForGitEvent, triggerInfo);
+
+    return createPlanExecution(
+        triggerDetails, triggerPayload, payload, executionTagForGitEvent, triggerType, embeddedUser);
   }
 
   private PlanExecution createPlanExecution(TriggerDetails triggerDetails, TriggerPayload triggerPayload,
-      String payload, String executionTagForGitEvent, ExecutionTriggerInfo triggerInfo) {
+      String payload, String executionTagForGitEvent, TriggerType triggerType, TriggeredBy triggeredBy) {
     try {
       NGTriggerEntity ngTriggerEntity = triggerDetails.getNgTriggerEntity();
       String accountId = ngTriggerEntity.getAccountId();
@@ -105,9 +98,10 @@ public class TriggerExecutionHelper {
       String runtimeInputYaml = triggerDetails.getNgTriggerConfigV2().getInputYaml();
 
       TriggerFlowPlanDetails triggerFlowPlanDetails = TriggerFlowPlanDetails.builder()
-                                                          .triggerInfo(triggerInfo)
                                                           .payload(payload)
                                                           .triggerPayload(triggerPayload)
+                                                          .triggeredBy(triggeredBy)
+                                                          .triggerType(triggerType)
                                                           .build();
 
       SecurityContextBuilder.setContext(new ServicePrincipal(PIPELINE_SERVICE.getServiceId()));
