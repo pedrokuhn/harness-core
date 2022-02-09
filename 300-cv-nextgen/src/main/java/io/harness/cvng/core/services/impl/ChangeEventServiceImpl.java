@@ -31,6 +31,7 @@ import io.harness.cvng.core.beans.monitoredService.ChangeSourceDTO;
 import io.harness.cvng.core.beans.monitoredService.DurationDTO;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.beans.params.ServiceEnvironmentParams;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.ChangeEventService;
 import io.harness.cvng.core.services.api.monitoredService.ChangeSourceService;
 import io.harness.cvng.core.transformer.changeEvent.ChangeEventEntityAndDTOTransformer;
@@ -47,7 +48,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -186,7 +186,7 @@ public class ChangeEventServiceImpl implements ChangeEventService {
     Instant trendStartTime = trendEndTime.minus(duration.getDuration());
     return getTimeline(serviceEnvironmentParams, Arrays.asList(serviceEnvironmentParams.getServiceIdentifier()),
         Arrays.asList(serviceEnvironmentParams.getEnvironmentIdentifier()), searchText, null, changeSourceTypes,
-        trendStartTime, trendEndTime, 48);
+        trendStartTime, trendEndTime, CVNextGenConstants.CVNG_TIMELINE_BUCKET_COUNT);
   }
 
   @VisibleForTesting

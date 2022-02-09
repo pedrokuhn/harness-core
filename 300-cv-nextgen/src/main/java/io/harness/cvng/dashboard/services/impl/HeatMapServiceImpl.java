@@ -9,7 +9,6 @@ package io.harness.cvng.dashboard.services.impl;
 
 import static io.harness.cvng.core.utils.DateTimeUtils.roundDownTo5MinBoundary;
 import static io.harness.cvng.core.utils.DateTimeUtils.roundDownToMinBoundary;
-import static io.harness.cvng.dashboard.entities.HeatMap.HeatMapResolution.FIVE_MIN;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.persistence.HQuery.excludeAuthority;
 
@@ -22,6 +21,7 @@ import io.harness.cvng.core.beans.monitoredService.HistoricalTrend;
 import io.harness.cvng.core.beans.monitoredService.RiskData;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.entities.CVConfig;
+import io.harness.cvng.core.services.CVNextGenConstants;
 import io.harness.cvng.core.services.api.CVConfigService;
 import io.harness.cvng.core.utils.ServiceEnvKey;
 import io.harness.cvng.dashboard.beans.HeatMapDTO;
@@ -381,7 +381,8 @@ public class HeatMapServiceImpl implements HeatMapService {
       String environmentIdentifier, DurationDTO duration, Instant endTime) {
     HistoricalTrend historicalTrend = getHealthScoreBars(projectParams, serviceIdentifier, environmentIdentifier,
         duration, endTime, HeatMapResolution.resolutionForDurationDTO(duration));
-    historicalTrend.reduceHealthScoreDataToXPoints(historicalTrend.getHealthScores().size() / 48);
+    historicalTrend.reduceHealthScoreDataToXPoints(
+        historicalTrend.getHealthScores().size() / CVNextGenConstants.CVNG_TIMELINE_BUCKET_COUNT);
     return historicalTrend;
   }
 
