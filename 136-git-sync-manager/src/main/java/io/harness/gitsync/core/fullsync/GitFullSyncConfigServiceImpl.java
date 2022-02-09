@@ -15,7 +15,6 @@ import io.harness.eraro.ErrorCode;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.gitsync.common.service.GitBranchService;
-import io.harness.gitsync.common.service.YamlGitConfigService;
 import io.harness.gitsync.core.beans.GitFullSyncConfig;
 import io.harness.gitsync.core.beans.GitFullSyncConfig.GitFullSyncConfigKeys;
 import io.harness.gitsync.fullsync.dtos.GitFullSyncConfigDTO;
@@ -37,7 +36,6 @@ import org.springframework.data.mongodb.core.query.Update;
 public class GitFullSyncConfigServiceImpl implements GitFullSyncConfigService {
   private final GitFullSyncConfigRepository gitFullSyncConfigRepository;
   private final GitBranchService gitBranchService;
-  private final YamlGitConfigService yamlGitConfigService;
   private final String ERROR_MSG_WHEN_CONFIG_EXIST =
       "A full sync config already exists for this account [%s], org [%s], project [%s]";
 
