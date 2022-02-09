@@ -10,6 +10,7 @@ package io.harness.ng.core.api.impl;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.NISHANT;
 import static io.harness.rule.OwnerRule.PHOENIKX;
+import static io.harness.rule.OwnerRule.VIKAS_M;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static java.util.Collections.singletonList;
@@ -253,6 +254,42 @@ public class SecretCrudServiceImplTest extends CategoryTest {
     }
 
     assertThat(updatedFile).isNotNull();
+    verify(encryptedDataService, atLeastOnce()).updateSecretFile(any(), any(), any());
+    verify(ngSecretServiceV2).update(any(), any(), eq(false));
+  }
+
+  @Test
+  @Owner(developers = VIKAS_M)
+  @Category(UnitTests.class)
+  public void testUpdateFile_NameChangeWithoutHavingToReUploadFile() {
+    NGEncryptedData encryptedDataDTO = NGEncryptedData.builder()
+                                           .type(SettingVariableTypes.CONFIG_FILE)
+                                           .name("fileName")
+                                           .secretManagerIdentifier("secretManager1")
+                                           .build();
+    SecretDTOV2 secretDTOV2 = SecretDTOV2.builder()
+                                  .type(SecretType.SecretFile)
+                                  .name("updatedFileName")
+                                  .spec(SecretFileSpecDTO.builder().secretManagerIdentifier("secretManager1").build())
+                                  .build();
+    when(encryptedDataService.updateSecretFile(any(), any(), any())).thenReturn(encryptedDataDTO);
+    when(ngSecretServiceV2.update(any(), any(), eq(false)))
+        .thenReturn(Secret.builder().identifier("secret").accountIdentifier("account").name("updatedFileName").build());
+    doReturn(Optional.ofNullable(SecretResponseWrapper.builder().secret(secretDTOV2).build()))
+        .when(secretCrudService)
+        .get(any(), any(), any(), any());
+
+    SecretResponseWrapper updatedFile =
+        secretCrudService.updateFile("account", null, null, "identifier", secretDTOV2, null);
+
+    ArgumentCaptor<Message> producerMessage = ArgumentCaptor.forClass(Message.class);
+    try {
+      verify(eventProducer, times(1)).send(producerMessage.capture());
+    } catch (EventsFrameworkDownException e) {
+      e.printStackTrace();
+    }
+    assertThat(updatedFile).isNotNull();
+    assertThat(updatedFile.getSecret().getName()).isEqualTo("updatedFileName");
     verify(encryptedDataService, atLeastOnce()).updateSecretFile(any(), any(), any());
     verify(ngSecretServiceV2).update(any(), any(), eq(false));
   }
