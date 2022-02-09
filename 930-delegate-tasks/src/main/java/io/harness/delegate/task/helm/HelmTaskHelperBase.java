@@ -76,8 +76,6 @@ import io.harness.logging.LogCallback;
 import io.harness.security.encryption.SecretDecryptionService;
 import io.harness.utils.FieldWithPlainTextOrSecretValueHelper;
 
-import software.wings.delegatetasks.ExceptionMessageSanitizer;
-
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -978,7 +976,6 @@ public class HelmTaskHelperBase {
         if (isNotEmpty(s3DecryptableEntityList)) {
           for (DecryptableEntity entity : s3HelmStoreConfig.getAwsConnector().getDecryptableEntities()) {
             decryptionService.decrypt(entity, s3HelmStoreConfig.getEncryptedDataDetails());
-            ExceptionMessageSanitizer.storeAllSecretsForSanitizing(entity, s3HelmStoreConfig.getEncryptedDataDetails());
           }
         }
         break;
@@ -989,8 +986,6 @@ public class HelmTaskHelperBase {
         if (isNotEmpty(gcsDecryptableEntityList)) {
           for (DecryptableEntity entity : gcsDecryptableEntityList) {
             decryptionService.decrypt(entity, gcsHelmStoreDelegateConfig.getEncryptedDataDetails());
-            ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
-                entity, gcsHelmStoreDelegateConfig.getEncryptedDataDetails());
           }
         }
         break;
@@ -998,7 +993,6 @@ public class HelmTaskHelperBase {
         HttpHelmStoreDelegateConfig httpHelmStoreConfig = (HttpHelmStoreDelegateConfig) helmStoreDelegateConfig;
         for (DecryptableEntity entity : httpHelmStoreConfig.getHttpHelmConnector().getDecryptableEntities()) {
           decryptionService.decrypt(entity, httpHelmStoreConfig.getEncryptedDataDetails());
-          ExceptionMessageSanitizer.storeAllSecretsForSanitizing(entity, httpHelmStoreConfig.getEncryptedDataDetails());
         }
         break;
       default:
