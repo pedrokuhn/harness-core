@@ -362,6 +362,8 @@ public class NGVaultServiceImpl implements NGVaultService {
       vaultConfig.setAppRoleId(approleId);
       vaultConfig.setSecretId(null);
       vaultConfig.setAuthToken(null);
+      vaultConfig.setUseVaultAgent(false);
+      vaultConfig.setUseAwsIam(false);
     });
 
     Optional<String> secretIdFromRequest =
@@ -385,6 +387,8 @@ public class NGVaultServiceImpl implements NGVaultService {
       vaultConfig.setAuthToken(x);
       vaultConfig.setAppRoleId(null);
       vaultConfig.setSecretId(null);
+      vaultConfig.setUseVaultAgent(false);
+      vaultConfig.setUseAwsIam(false);
     });
   }
 
@@ -399,6 +403,7 @@ public class NGVaultServiceImpl implements NGVaultService {
       vaultConfig.setSecretId(null);
       vaultConfig.setSinkPath(x);
       vaultConfig.setUseVaultAgent(true);
+      vaultConfig.setUseAwsIam(false);
     });
   }
 
