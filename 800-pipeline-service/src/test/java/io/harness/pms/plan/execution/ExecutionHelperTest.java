@@ -215,7 +215,8 @@ public class ExecutionHelperTest extends CategoryTest {
     PlanExecution secondPlanExecution = PlanExecution.builder().metadata(secondExecutionMetadata).build();
     doReturn(secondPlanExecution).when(planExecutionService).get("originalExecutionId2");
 
-    ExecutionTriggerInfo reRerunExecutionTriggerInfo = executionHelper.buildTriggerInfoForManualFlow("originalExecutionId2");
+    ExecutionTriggerInfo reRerunExecutionTriggerInfo =
+        executionHelper.buildTriggerInfoForManualFlow("originalExecutionId2");
     rerunExecutionAssertions(triggeredBy, reRerunExecutionTriggerInfo);
     verify(triggeredByHelper, times(3)).getFromSecurityContext();
     verify(planExecutionService, times(1)).get(originalExecutionId);
