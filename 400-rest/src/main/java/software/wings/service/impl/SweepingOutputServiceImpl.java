@@ -24,7 +24,9 @@ import io.harness.serializer.KryoSerializer;
 
 import software.wings.api.InstanceElement;
 import software.wings.api.instancedetails.InstanceInfoVariables;
+import software.wings.beans.WorkflowExecution;
 import software.wings.dl.WingsPersistence;
+import software.wings.service.intfc.WorkflowExecutionService;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputInquiry;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputInquiryController;
 import software.wings.service.intfc.sweepingoutput.SweepingOutputService;
@@ -39,6 +41,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +56,7 @@ import org.mongodb.morphia.query.UpdateOperations;
 public class SweepingOutputServiceImpl implements SweepingOutputService {
   @Inject private WingsPersistence wingsPersistence;
   @Inject private KryoSerializer kryoSerializer;
+  @Inject private WorkflowExecutionService workflowExecutionService;
 
   @Override
   public SweepingOutputInstance save(SweepingOutputInstance sweepingOutputInstance) {
@@ -281,20 +285,46 @@ public class SweepingOutputServiceImpl implements SweepingOutputService {
   }
 
   private void addFilters(SweepingOutputInquiry sweepingOutputInquiry, Query<SweepingOutputInstance> query) {
+    CriteriaContainerImpl[] criteriaContainers = new CriteriaContainerImpl[5];
+    AtomicInteger totalCriterias = new AtomicInteger(0);
     final CriteriaContainerImpl workflowCriteria = query.criteria(SweepingOutputInstanceKeys.workflowExecutionIds)
                                                        .equal(sweepingOutputInquiry.getWorkflowExecutionId());
+    addToCriteria(workflowCriteria, criteriaContainers, totalCriterias);
+
     final CriteriaContainerImpl phaseCriteria =
         query.criteria(SweepingOutputInstanceKeys.phaseExecutionId).equal(sweepingOutputInquiry.getPhaseExecutionId());
+    addToCriteria(phaseCriteria, criteriaContainers, totalCriterias);
+
     final CriteriaContainerImpl stateCriteria =
         query.criteria(SweepingOutputInstanceKeys.stateExecutionId).equal(sweepingOutputInquiry.getStateExecutionId());
+    addToCriteria(stateCriteria, criteriaContainers, totalCriterias);
 
     if (sweepingOutputInquiry.getPipelineExecutionId() != null) {
       final CriteriaContainerImpl pipelineCriteria = query.criteria(SweepingOutputInstanceKeys.pipelineExecutionId)
                                                          .equal(sweepingOutputInquiry.getPipelineExecutionId());
-      query.or(pipelineCriteria, workflowCriteria, phaseCriteria, stateCriteria);
-    } else {
-      query.or(workflowCriteria, phaseCriteria, stateCriteria);
+      addToCriteria(pipelineCriteria, criteriaContainers, totalCriterias);
     }
+
+    if (sweepingOutputInquiry.getIsOnDemandRollback()) {
+      final WorkflowExecution onDemandRollbackWorkflowExecution = workflowExecutionService.fetchWorkflowExecution(
+          sweepingOutputInquiry.getAppId(), sweepingOutputInquiry.getWorkflowExecutionId(),
+          WorkflowExecution.WorkflowExecutionKeys.originalExecution);
+      if (onDemandRollbackWorkflowExecution.getOriginalExecution() != null) {
+        final WorkflowExecution originalWorkflowExecution = workflowExecutionService.fetchWorkflowExecution(
+            sweepingOutputInquiry.getAppId(), sweepingOutputInquiry.getWorkflowExecutionId(),
+            WorkflowExecution.WorkflowExecutionKeys.pipelineExecutionId);
+        final String pipelineExecutionId = originalWorkflowExecution.getPipelineExecutionId();
+        if (pipelineExecutionId != null) {
+          query.criteria(SweepingOutputInstanceKeys.pipelineExecutionId).equal(pipelineExecutionId);
+        }
+      }
+    }
+    query.or(criteriaContainers);
+  }
+
+  private void addToCriteria(
+      CriteriaContainerImpl criteriaContainer, CriteriaContainerImpl[] containers, AtomicInteger total) {
+    containers[total.getAndIncrement()] = criteriaContainer;
   }
 
   public static SweepingOutputInstanceBuilder prepareSweepingOutputBuilder(String appId, String pipelineExecutionId,

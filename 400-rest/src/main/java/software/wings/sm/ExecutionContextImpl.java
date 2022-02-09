@@ -1284,6 +1284,7 @@ public class ExecutionContextImpl implements DeploymentExecutionContext {
     builder.phaseExecutionId(phaseExecutionId);
 
     builder.stateExecutionId(stateExecutionInstance.getUuid());
+    builder.isOnDemandRollback(stateExecutionInstance.getIsOnDemandRollback());
     return builder;
   }
 
